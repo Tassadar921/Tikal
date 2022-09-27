@@ -9,21 +9,26 @@ import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
 })
 export class HomePage implements OnInit{
 
+  private renderer;
+  private scene;
+  private camera;
+  private controls;
+
   constructor() {}
 
   ngOnInit() {
-    const renderer = new THREE.WebGLRenderer();
-    document.body.appendChild(renderer.domElement);
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    this.renderer = new THREE.WebGLRenderer();
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(this.renderer.domElement);
 
-    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.5, 1000);
-    const scene = new THREE.Scene();
+    this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
+    this.scene = new THREE.Scene();
 
-    camera.position.set(0,0,100);
+    this.camera.position.set(0,0,100);
 
-    const controls = new OrbitControls(camera, renderer.domElement);
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
 
-    scene.background = new THREE.Color(0, 0, 0);
+    this.scene.background = new THREE.Color(0, 0, 0);
 
     const green = new THREE.LineBasicMaterial({color: 0x3CAF0D});
 
@@ -56,19 +61,24 @@ export class HomePage implements OnInit{
     const cubeTMP = new THREE.BufferGeometry().setFromPoints(cubeBuffer);
 
     const cube = new THREE.Line(cubeTMP, green);
-    scene.add(cube);
+    this.scene.add(cube);
 
-    renderer.render(scene, camera);
+    this.controls.keys = {
+      left: 'ArrowLeft', //left arrow
+      up: 'ArrowUp', // up arrow
+      right: 'ArrowRight', // right arrow
+      bottom: 'ArrowDown' // down arrow
+    };
 
-    controls.update();
+    this.controls.update();
 
-    this.see(renderer, scene, camera, controls);
+    this.see();
   }
 
-  see = (renderer, scene, camera, controls) => {
-    requestAnimationFrame(see);
-    renderer.render(scene,camera);
-    controls.update();
+  see = () => {
+    console.log('test');
+    this.controls.update();
+    this.renderer.render(this.scene,this.camera);
+    requestAnimationFrame(this.see);
   };
-
 }
