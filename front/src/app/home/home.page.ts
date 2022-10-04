@@ -28,16 +28,15 @@ export class HomePage implements AfterViewInit{
     this.configRenderer();
     this.configControls();
 
-    const lines = 5;
-    const col = 3;
-    for(let i=0;i<lines;i++){
-      for(let j=0;j<col;j++){
-        this.generateHexagon(20*i, j*10*Math.sin(2*Math.PI/6), 'green');
-        this.generateHexagon(20*i, j*10*Math.sin(2*Math.PI/6), 'green');
+    const lines = 6;
+    const col = 6;
+    for(let i=0;i<col/2;i++){
+      for(let j=0;j<lines/2;j++){
+        this.generateHexagon(i*(10 * Math.cos(2*Math.PI)+20), 0, 'green');
+        this.generateHexagon(15 + i*(10 * Math.cos(2*Math.PI)+20), 10*Math.sin(2*Math.PI/6), 'green');
       }
     }
-    // this.generateHexagon(0,0, 'green');
-    // this.generateHexagon(15,10*Math.sin(2*Math.PI/6), 'blue');
+    this.generateHexagon(0, 2*(12 * Math.sin(2*Math.PI)), 'red');
 
     this.animate();
   }
@@ -49,7 +48,7 @@ export class HomePage implements AfterViewInit{
   configCamera = () => {
     this.camera.aspect = this.calculateAspectRatio();
     this.camera.updateProjectionMatrix();
-    this.camera.position.set(0, 0, 70);
+    this.camera.position.set(0, 0, 100);
     this.camera.lookAt(this.scene.position);
   };
 
