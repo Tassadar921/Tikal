@@ -35,11 +35,9 @@ const con = mysql.createConnection({
     database: 'oc'
 });
 
-function preventDisconnect() {
     con.connect(err => {
         if (err) {
             console.log('Error when connecting to db:', err);
-            setTimeout(preventDisconnect, 5000);
         } else {
             console.log('Connected to db');
 
@@ -52,9 +50,6 @@ function preventDisconnect() {
             });
         }
     });
-}
-
-preventDisconnect();
 
 if (app.listen(process.env.PORT || 8080)) {
     console.log('Serveur lancé sur le port 8080');
