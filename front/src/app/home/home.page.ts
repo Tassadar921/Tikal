@@ -1,7 +1,6 @@
-import {AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, Input, ViewChild} from '@angular/core';
 import * as THREE from 'three';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
-import {FlyControls} from 'three/examples/jsm/controls/FlyControls';
 
 @Component({
   selector: 'app-home',
@@ -13,16 +12,14 @@ export class HomePage implements AfterViewInit{
   @Input() name: string;
   @ViewChild('canvas') canvasRef: ElementRef;
 
-  renderer = new THREE.WebGLRenderer();
-  scene = null;
-  camera = null;
-  controls = null;
-  mesh = null;
-  light = null;
+  private renderer = new THREE.WebGLRenderer();
+  private readonly scene = null;
+  private readonly camera = null;
+  private controls = null;
 
   constructor() {
     this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera(35, 800/640, 0.1, 1000);
+    this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.5, 1000);
   }
 
   ngAfterViewInit() {
@@ -31,21 +28,29 @@ export class HomePage implements AfterViewInit{
     this.configRenderer();
     this.configControls();
 
-    this.createLight();
-    this.createMesh();
+    const lines = 5;
+    const col = 3;
+    for(let i=0;i<lines;i++){
+      for(let j=0;j<col;j++){
+        this.generateHexagon(20*i, j*10*Math.sin(2*Math.PI/6), 'green');
+        this.generateHexagon(20*i, j*10*Math.sin(2*Math.PI/6), 'green');
+      }
+    }
+    // this.generateHexagon(0,0, 'green');
+    // this.generateHexagon(15,10*Math.sin(2*Math.PI/6), 'blue');
 
     this.animate();
   }
 
   configScene = () => {
-    this.scene.background = new THREE.Color( 0xdddddd );
+    this.scene.background = new THREE.Color( 0,0,0 );
   };
 
   configCamera = () => {
     this.camera.aspect = this.calculateAspectRatio();
     this.camera.updateProjectionMatrix();
-    this.camera.position.set( -15, 10, 15 );
-    this.camera.lookAt( this.scene.position );
+    this.camera.position.set(0, 0, 70);
+    this.camera.lookAt(this.scene.position);
   };
 
   configRenderer = () => {
@@ -55,10 +60,7 @@ export class HomePage implements AfterViewInit{
       alpha: true
     });
     this.renderer.setPixelRatio(devicePixelRatio);
-    // setClearColor for transparent background
-    // i.e. scene or canvas background shows through
     this.renderer.setClearColor( 0x000000, 0 );
-    this.renderer.setSize(this.canvas.clientWidth, this.canvas.clientHeight);
   };
 
   configControls = () => {
@@ -69,24 +71,28 @@ export class HomePage implements AfterViewInit{
     this.controls.update();
   };
 
-  createLight = () => {
-    this.light = new THREE.PointLight( 0xffffff );
-    this.light.position.set( -10, 10, 10 );
-    this.scene.add( this.light );
-  };
+  generateHexagon = (x,y,color) => {
+    const hexagon3DBuffer = [];
 
-  createMesh = () => {
-    const geometry = new THREE.BoxGeometry(5, 5, 5);
-    const material = new THREE.MeshLambertMaterial({ color: 0xff0000 });
-    this.mesh = new THREE.Mesh(geometry, material);
-    this.scene.add(this.mesh);
+    const material = new THREE.LineBasicMaterial({color});
+
+    for(const h of [1.5,-1.5]) {
+      for (const val of [(2 * Math.PI), (2 * Math.PI) / 6, 2 * (2 * Math.PI) / 6,
+        3 * (2 * Math.PI) / 6, 4 * (2 * Math.PI) / 6,
+        5 * (2 * Math.PI) / 6, (2 * Math.PI)]) {
+        for(const pow of [1,2,1]) {
+          hexagon3DBuffer.push(new THREE.Vector3(10 * Math.cos(val)+x, 10 * Math.sin(val)+y, Math.pow(-1, pow) * h));
+        }
+      }
+    }
+    const geometry = new THREE.BufferGeometry().setFromPoints(hexagon3DBuffer);
+
+    const hexagon3D = new THREE.Line(geometry, material);
+    this.scene.add(hexagon3D);
   };
 
   animate = () => {
     window.requestAnimationFrame(() => this.animate());
-    // this.mesh.rotation.x += 0.01;
-    // this.mesh.rotation.y += 0.01;
-
     this.controls.update();
     this.renderer.render(this.scene, this.camera);
   };
