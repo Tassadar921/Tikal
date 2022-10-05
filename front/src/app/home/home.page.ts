@@ -13,19 +13,15 @@ export class HomePage implements AfterViewInit{
   @ViewChild('canvas') canvasRef: ElementRef;
 
   private renderer = new THREE.WebGLRenderer();
-  private readonly scene = null;
-  private readonly camera = null;
+  private scene = null;
+  private camera = null;
   private controls = null;
 
-  constructor() {
-    this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.5, 1000);
-  }
+  constructor() {}
 
   ngAfterViewInit() {
-    document.body.addEventListener('keydown', (e) => {
-      this.keyboardPressed(e.key);
-    });
+    this.scene = new THREE.Scene();
+    this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.5, 1000);
     this.configScene();
     this.configCamera();
     this.configRenderer();
@@ -34,6 +30,7 @@ export class HomePage implements AfterViewInit{
     const lines = 8;
     const col = 10;
 
+    //génération de la grid de lines*col sous la forme d'hexagones
     for(let i=0;i<col/2;i++){
       for(let j=0;j<lines/2;j++){
         this.generateHexagon(i*(10 * Math.cos(2*Math.PI)+20), j*-2*10*Math.cos(Math.PI/6), 'green');
@@ -41,6 +38,12 @@ export class HomePage implements AfterViewInit{
       }
     }
 
+    //pour les mouvements de la caméra, on en est à la phase de tests de ce côté
+    document.body.addEventListener('keydown', (e) => {
+      this.keyboardPressed(e.key);
+    });
+
+    //fonction qui boucle pour update la caméra
     this.animate();
   }
 
@@ -124,13 +127,13 @@ export class HomePage implements AfterViewInit{
     this.renderer.render(this.scene, this.camera);
   };
 
-  private calculateAspectRatio(): number {
+  calculateAspectRatio = () => {
     const height = this.canvas.clientHeight;
     if (height === 0) {
       return 0;
     }
     return this.canvas.clientWidth / this.canvas.clientHeight;
-  }
+  };
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   private get canvas(): HTMLCanvasElement {
