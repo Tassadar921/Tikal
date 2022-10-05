@@ -28,15 +28,15 @@ export class HomePage implements AfterViewInit{
     this.configRenderer();
     this.configControls();
 
-    const lines = 6;
-    const col = 6;
+    const lines = 100;
+    const col = 100;
+
     for(let i=0;i<col/2;i++){
       for(let j=0;j<lines/2;j++){
-        this.generateHexagon(i*(10 * Math.cos(2*Math.PI)+20), 0, 'green');
-        this.generateHexagon(15 + i*(10 * Math.cos(2*Math.PI)+20), 10*Math.sin(2*Math.PI/6), 'green');
+        this.generateHexagon(i*(10 * Math.cos(2*Math.PI)+20), j*-2*10*Math.cos(Math.PI/6), 'green');
+        this.generateHexagon(15 + i*(10 * Math.cos(2*Math.PI)+20), 10*Math.sin(2*Math.PI/6)+j*-2*10*Math.cos(Math.PI/6), 'green');
       }
     }
-    this.generateHexagon(0, 2*(12 * Math.sin(2*Math.PI)), 'red');
 
     this.animate();
   }
