@@ -23,13 +23,16 @@ export class HomePage implements AfterViewInit{
   }
 
   ngAfterViewInit() {
+    document.body.addEventListener('keydown', (e) => {
+      this.keyboardPressed(e.key);
+    });
     this.configScene();
     this.configCamera();
     this.configRenderer();
     this.configControls();
 
-    const lines = 100;
-    const col = 100;
+    const lines = 8;
+    const col = 10;
 
     for(let i=0;i<col/2;i++){
       for(let j=0;j<lines/2;j++){
@@ -68,6 +71,31 @@ export class HomePage implements AfterViewInit{
     this.controls.enableZoom = true;
     this.controls.enablePan = true;
     this.controls.update();
+  };
+
+  keyboardPressed = (key) => {
+    if(key==='z'||key==='q'||key==='s'||key==='d'){
+      this.moveCamera(key);
+      console.log(this.scene.position);
+    }
+    this.controls.update();
+  };
+
+  moveCamera = (key) => {
+    switch(key){
+      case 'z':
+        this.scene.position.y-=1;
+        break;
+      case 'q':
+        this.scene.position.x+=1;
+        break;
+      case 's':
+        this.scene.position.y+=1;
+        break;
+      case 'd':
+        this.scene.position.x-=1;
+        break;
+    }
   };
 
   generateHexagon = (x,y,color) => {
