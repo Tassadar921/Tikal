@@ -39,16 +39,45 @@ export class HomePage implements AfterViewInit{
     }
 
     //pour les mouvements de la caméra, on en est à la phase de tests de ce côté
+    let keyBuffer = [];
     document.body.addEventListener('keydown', (e) => {
-      this.keyboardPressed(e.key);
+      if(!this.keyBufferIncludes(keyBuffer, e.key)){
+        keyBuffer.push(e.key);
+      }
+      this.keyboardPressed(keyBuffer);
     });
+
+    document.body.addEventListener('keyup', (e) => {
+      keyBuffer = this.deleteFromKeyBuffer(keyBuffer, e.key);
+    });
+
+    //début tests sprites
+
+    const heartShape = new THREE.Shape();
+
+    heartShape.moveTo( 25, 25 );
+    heartShape.bezierCurveTo( 25, 25, 20, 0, 0, 0 );
+    heartShape.bezierCurveTo( - 30, 0, - 30, 35, - 30, 35 );
+    heartShape.bezierCurveTo( - 30, 55, - 10, 77, 25, 95 );
+    heartShape.bezierCurveTo( 60, 77, 80, 55, 80, 35 );
+    heartShape.bezierCurveTo( 80, 35, 80, 0, 50, 0 );
+    heartShape.bezierCurveTo( 35, 0, 25, 25, 25, 25 );
+
+    const extrudeSettings = { depth: 8, bevelEnabled: true, bevelSegments: 2, steps: 2, bevelSize: 1, bevelThickness: 1 };
+
+    const geometry = new THREE.ExtrudeGeometry( heartShape, extrudeSettings );
+
+    const mesh = new THREE.Mesh( geometry, new THREE.MeshPhongMaterial() );
+    this.scene.add( mesh );
+
+    //fin tests sprites
 
     //fonction qui boucle pour update la caméra
     this.animate();
   }
 
   configScene = () => {
-    this.scene.background = new THREE.Color( 0,0,0 );
+    // this.scene.background = new THREE.Color( 0,0,0 );
   };
 
   configCamera = () => {
@@ -76,27 +105,53 @@ export class HomePage implements AfterViewInit{
     this.controls.update();
   };
 
-  keyboardPressed = (key) => {
-    if(key==='z'||key==='q'||key==='s'||key==='d'){
-      this.moveCamera(key);
-      console.log(this.scene.position);
+  keyBufferIncludes = (keyBuffer, key) => {
+    for(const line of keyBuffer){
+      if(line===key){
+        return true;
+      }
     }
-    this.controls.update();
+    return false;
+  };
+
+  deleteFromKeyBuffer = (keyBuffer, key) => {
+    for(let i=0; i<keyBuffer.length;i++){
+      if(keyBuffer[i]===key){
+        keyBuffer.splice(i,1);
+        return keyBuffer;
+      }
+    }
+    return keyBuffer;
+  };
+
+  keyboardPressed = (keyBuffer) => {
+    for(const key of keyBuffer) {
+      if (key === 'z' || key === 'q' || key === 's' || key === 'd' || key === 'r' || key === 'f') {
+        this.moveCamera(key);
+      }
+      this.controls.update();
+    }
   };
 
   moveCamera = (key) => {
     switch(key){
       case 'z':
-        this.scene.position.y-=1;
+        this.scene.position.y--;
         break;
       case 'q':
-        this.scene.position.x+=1;
+        this.scene.position.x++;
         break;
       case 's':
-        this.scene.position.y+=1;
+        this.scene.position.y++;
         break;
       case 'd':
-        this.scene.position.x-=1;
+        this.scene.position.x--;
+        break;
+      case 'f':
+        this.scene.position.z--;
+        break;
+      case 'r':
+        this.scene.position.z++;
         break;
     }
   };
