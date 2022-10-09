@@ -30,7 +30,7 @@ export class HomePage implements AfterViewInit{
     const lines = 8;
     const col = 10;
 
-    //génération de la grid de lines*col sous la forme d'hexagones
+    // génération de la grid de lines*col sous la forme d'hexagones
     for(let i=0;i<col/2;i++){
       for(let j=0;j<lines/2;j++){
         this.generateHexagon(i*(10 * Math.cos(2*Math.PI)+20), j*-2*10*Math.cos(Math.PI/6), 'green');
@@ -38,7 +38,6 @@ export class HomePage implements AfterViewInit{
       }
     }
 
-    //pour les mouvements de la caméra, on en est à la phase de tests de ce côté
     let keyBuffer = [];
     document.body.addEventListener('keydown', (e) => {
       if(!this.keyBufferIncludes(keyBuffer, e.key)){
@@ -51,33 +50,13 @@ export class HomePage implements AfterViewInit{
       keyBuffer = this.deleteFromKeyBuffer(keyBuffer, e.key);
     });
 
-    //début tests sprites
-
-    const heartShape = new THREE.Shape();
-
-    heartShape.moveTo( 25, 25 );
-    heartShape.bezierCurveTo( 25, 25, 20, 0, 0, 0 );
-    heartShape.bezierCurveTo( - 30, 0, - 30, 35, - 30, 35 );
-    heartShape.bezierCurveTo( - 30, 55, - 10, 77, 25, 95 );
-    heartShape.bezierCurveTo( 60, 77, 80, 55, 80, 35 );
-    heartShape.bezierCurveTo( 80, 35, 80, 0, 50, 0 );
-    heartShape.bezierCurveTo( 35, 0, 25, 25, 25, 25 );
-
-    const extrudeSettings = { depth: 8, bevelEnabled: true, bevelSegments: 2, steps: 2, bevelSize: 1, bevelThickness: 1 };
-
-    const geometry = new THREE.ExtrudeGeometry( heartShape, extrudeSettings );
-
-    const mesh = new THREE.Mesh( geometry, new THREE.MeshPhongMaterial() );
-    this.scene.add( mesh );
-
-    //fin tests sprites
-
     //fonction qui boucle pour update la caméra
     this.animate();
   }
 
   configScene = () => {
     // this.scene.background = new THREE.Color( 0,0,0 );
+    // this.scene.add(new THREE.GridHelper(100,10));
   };
 
   configCamera = () => {
@@ -157,23 +136,25 @@ export class HomePage implements AfterViewInit{
   };
 
   generateHexagon = (x,y,color) => {
-    const hexagon3DBuffer = [];
 
-    const material = new THREE.LineBasicMaterial({color});
+    const loader = new THREE.TextureLoader();
 
-    for(const h of [1.5,-1.5]) {
-      for (const val of [(2 * Math.PI), (2 * Math.PI) / 6, 2 * (2 * Math.PI) / 6,
-        3 * (2 * Math.PI) / 6, 4 * (2 * Math.PI) / 6,
-        5 * (2 * Math.PI) / 6, (2 * Math.PI)]) {
-        for(const pow of [1,2,1]) {
-          hexagon3DBuffer.push(new THREE.Vector3(10 * Math.cos(val)+x, 10 * Math.sin(val)+y, Math.pow(-1, pow) * h));
-        }
-      }
-    }
-    const geometry = new THREE.BufferGeometry().setFromPoints(hexagon3DBuffer);
+    const geometry = new THREE.CylinderGeometry( 10, 10, 2, 6 );
+    //i=0: sides
+    //i=1: top
+    //i=2: bottom
+    const materials = [
+      new THREE.MeshBasicMaterial({map: loader.load('./assets/dirt.png')}),
+      new THREE.MeshBasicMaterial({map: loader.load('./assets/herbe.png')}),
+      new THREE.MeshBasicMaterial({map: loader.load('./assets/wood.png')}),
+    ];
 
-    const hexagon3D = new THREE.Line(geometry, material);
-    this.scene.add(hexagon3D);
+    const cylinder = new THREE.Mesh( geometry, materials );
+    cylinder.rotateX(Math.PI/2);
+    cylinder.rotateY(Math.PI/2);
+    cylinder.position.x=x;
+    cylinder.position.y=y;
+    this.scene.add( cylinder );
   };
 
   animate = () => {
