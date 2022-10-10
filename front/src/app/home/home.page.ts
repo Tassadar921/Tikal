@@ -1,6 +1,7 @@
 import {AfterViewInit, Component, ElementRef, Input, ViewChild} from '@angular/core';
 import * as THREE from 'three';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
+import {DragControls} from 'three/examples/jsm/controls/DragControls';
 
 @Component({
   selector: 'app-home',
@@ -16,6 +17,7 @@ export class HomePage implements AfterViewInit{
   private scene = null;
   private camera = null;
   private controls = null;
+  private plane = null;
 
   constructor() {}
 
@@ -26,28 +28,39 @@ export class HomePage implements AfterViewInit{
     this.configCamera();
     this.configRenderer();
     this.configControls();
+    this.configPlane();
 
     const lines = 8;
     const col = 10;
 
     // génération de la grid de lines*col sous la forme d'hexagones
+    let objects = [];
+    objects.push(this.plane);
     for(let i=0;i<col/2;i++){
       for(let j=0;j<lines/2;j++){
-        this.generateHexagon(i*(10 * Math.cos(2*Math.PI)+20), j*-2*10*Math.cos(Math.PI/6), 'green');
-        this.generateHexagon(15 + i*(10 * Math.cos(2*Math.PI)+20), 10*Math.sin(2*Math.PI/6)+j*-2*10*Math.cos(Math.PI/6), 'green');
+        objects = this.generateHexagon(i*(10 * Math.cos(2*Math.PI)+20), j*-2*10*Math.cos(Math.PI/6), 'green', objects);
+        objects = this.generateHexagon(15 + i*(10 * Math.cos(2*Math.PI)+20), 10*Math.sin(2*Math.PI/6)+j*-2*10*Math.cos(Math.PI/6), 'green', objects);
       }
     }
 
+    const dragable = new DragControls(objects, this.camera, this.renderer.domElement);
+    dragable.addEventListener( 'dragstart',() => { this.controls.enabled = false; } );
+    dragable.addEventListener( 'dragend', () => { this.controls.enabled = true; } );
+
+    this.scene.add(this.plane);
+
     let keyBuffer = [];
     document.body.addEventListener('keydown', (e) => {
-      if(!this.keyBufferIncludes(keyBuffer, e.key)){
-        keyBuffer.push(e.key);
+
+      if(!this.keyBufferIncludes(keyBuffer, e.key.toLowerCase())){
+        keyBuffer.push(e.key.toLowerCase());
       }
-      this.keyboardPressed(keyBuffer);
+      const shift = this.keyBufferIncludes(keyBuffer, 'shift');
+      this.keyboardPressed(keyBuffer, shift);
     });
 
     document.body.addEventListener('keyup', (e) => {
-      keyBuffer = this.deleteFromKeyBuffer(keyBuffer, e.key);
+      keyBuffer = this.deleteFromKeyBuffer(keyBuffer, e.key.toLowerCase());
     });
 
     //fonction qui boucle pour update la caméra
@@ -55,8 +68,7 @@ export class HomePage implements AfterViewInit{
   }
 
   configScene = () => {
-    // this.scene.background = new THREE.Color( 0,0,0 );
-    // this.scene.add(new THREE.GridHelper(100,10));
+    this.scene.background = new THREE.Color( 0,0,0 );
   };
 
   configCamera = () => {
@@ -84,6 +96,12 @@ export class HomePage implements AfterViewInit{
     this.controls.update();
   };
 
+  configPlane = () => {
+    const scenePlane = new THREE.PlaneGeometry( window.innerWidth, window.innerHeight);
+    const scenePlaneMaterial = new THREE.MeshBasicMaterial( { side: THREE.DoubleSide, color: new THREE.Color(0,0,0)} );
+    this.plane = new THREE.Mesh( scenePlane, scenePlaneMaterial );
+  };
+
   keyBufferIncludes = (keyBuffer, key) => {
     for(const line of keyBuffer){
       if(line===key){
@@ -103,39 +121,44 @@ export class HomePage implements AfterViewInit{
     return keyBuffer;
   };
 
-  keyboardPressed = (keyBuffer) => {
+  keyboardPressed = (keyBuffer, shift) => {
     for(const key of keyBuffer) {
       if (key === 'z' || key === 'q' || key === 's' || key === 'd' || key === 'r' || key === 'f') {
-        this.moveCamera(key);
+        this.moveCamera(key, shift);
       }
       this.controls.update();
     }
   };
 
-  moveCamera = (key) => {
+  moveCamera = (key, shift) => {
+    console.log(shift);
+    let speed = 1;
+    if(shift){
+      speed = 3;
+    }
     switch(key){
       case 'z':
-        this.scene.position.y--;
+        this.scene.position.y-=speed;
         break;
       case 'q':
-        this.scene.position.x++;
+        this.scene.position.x+=speed;
         break;
       case 's':
-        this.scene.position.y++;
+        this.scene.position.y+=speed;
         break;
       case 'd':
-        this.scene.position.x--;
+        this.scene.position.x-=speed;
         break;
       case 'f':
-        this.scene.position.z--;
+        this.scene.position.z-=speed;
         break;
       case 'r':
-        this.scene.position.z++;
+        this.scene.position.z+=speed;
         break;
     }
   };
 
-  generateHexagon = (x,y,color) => {
+  generateHexagon = (x,y,color,objects) => {
 
     const loader = new THREE.TextureLoader();
 
@@ -154,7 +177,11 @@ export class HomePage implements AfterViewInit{
     cylinder.rotateY(Math.PI/2);
     cylinder.position.x=x;
     cylinder.position.y=y;
-    this.scene.add( cylinder );
+    const test = [];
+    test.push(cylinder);
+    objects.push(cylinder);
+    this.plane.add( cylinder );
+    return objects;
   };
 
   animate = () => {
