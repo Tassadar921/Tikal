@@ -42,6 +42,7 @@ export class HomePage implements AfterViewInit{
         objects = this.generateHexagon(i*(10 * Math.cos(2*Math.PI)+20),
           j*-2*10*Math.cos(Math.PI/6),
           'green', objects, lines, col, radius);
+
         objects = this.generateHexagon(15 + i*(10 * Math.cos(2*Math.PI)+20),
           10*Math.sin(2*Math.PI/6)+j*-2*10*Math.cos(Math.PI/6),
           'green', objects, lines, col, radius);
@@ -49,16 +50,31 @@ export class HomePage implements AfterViewInit{
     }
 
     const dragable = new DragControls(objects, this.camera, this.renderer.domElement);
-    dragable.transformGroup=true;
+    dragable.transformGroup=false;
     dragable.addEventListener( 'dragstart',(e) => {
       this.controls.enabled = false;
       console.log(e);
     });
     dragable.addEventListener( 'dragend', (e) => {
       this.controls.enabled = true;
-      // console.log(e);
       e.object.position.z=0;
-    } );
+    });
+
+    dragable.addEventListener( 'drag', (e) => {
+      e.object.position.z=radius/2.5;
+      console.log(e);
+    });
+
+    this.controls.addEventListener('end', (e) => {
+      const h = Math.sqrt(Math.pow(this.camera.position.x, 2)
+        +Math.pow(this.camera.position.y, 2)
+        +Math.pow(this.camera.position.z, 2));
+
+      const p = Math.sqrt(Math.pow(this.camera.position.x, 2)
+        +Math.pow(this.camera.position.y, 2));
+
+      console.log(Math.acos(p/h)*(180/Math.PI));
+    });
 
     this.scene.add(this.plane);
 
@@ -175,7 +191,7 @@ export class HomePage implements AfterViewInit{
 
     const loader = new THREE.TextureLoader();
 
-    const geometry = new THREE.CylinderGeometry( 10, 10, 3, 6 );
+    const geometry = new THREE.CylinderGeometry( radius, radius, radius/3, 6 );
     //i=0: sides
     //i=1: top
     //i=2: bottom
