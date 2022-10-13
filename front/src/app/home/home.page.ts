@@ -22,30 +22,43 @@ export class HomePage implements AfterViewInit{
   constructor() {}
 
   ngAfterViewInit() {
+    const lines = 8;//pair uniquement
+    const col = 10;//pair uniquement
+    const radius = 10;
+
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.5, 1000);
     this.configScene();
     this.configCamera();
     this.configRenderer();
     this.configControls();
-    this.configPlane();
-
-    const lines = 8;
-    const col = 10;
+    this.configPlane(lines, col, radius);
 
     // génération de la grid de lines*col sous la forme d'hexagones
     let objects = [];
     objects.push(this.plane);
     for(let i=0;i<col/2;i++){
       for(let j=0;j<lines/2;j++){
-        objects = this.generateHexagon(i*(10 * Math.cos(2*Math.PI)+20), j*-2*10*Math.cos(Math.PI/6), 'green', objects);
-        objects = this.generateHexagon(15 + i*(10 * Math.cos(2*Math.PI)+20), 10*Math.sin(2*Math.PI/6)+j*-2*10*Math.cos(Math.PI/6), 'green', objects);
+        objects = this.generateHexagon(i*(10 * Math.cos(2*Math.PI)+20),
+          j*-2*10*Math.cos(Math.PI/6),
+          'green', objects, lines, col, radius);
+        objects = this.generateHexagon(15 + i*(10 * Math.cos(2*Math.PI)+20),
+          10*Math.sin(2*Math.PI/6)+j*-2*10*Math.cos(Math.PI/6),
+          'green', objects, lines, col, radius);
       }
     }
 
     const dragable = new DragControls(objects, this.camera, this.renderer.domElement);
-    dragable.addEventListener( 'dragstart',() => { this.controls.enabled = false; } );
-    dragable.addEventListener( 'dragend', () => { this.controls.enabled = true; } );
+    dragable.transformGroup=true;
+    dragable.addEventListener( 'dragstart',(e) => {
+      this.controls.enabled = false;
+      console.log(e);
+    });
+    dragable.addEventListener( 'dragend', (e) => {
+      this.controls.enabled = true;
+      // console.log(e);
+      e.object.position.z=0;
+    } );
 
     this.scene.add(this.plane);
 
@@ -74,7 +87,7 @@ export class HomePage implements AfterViewInit{
   configCamera = () => {
     this.camera.aspect = this.calculateAspectRatio();
     this.camera.updateProjectionMatrix();
-    this.camera.position.set(0, 0, 100);
+    this.camera.position.set(0, 0, 150);
     this.camera.lookAt(this.scene.position);
   };
 
@@ -96,10 +109,11 @@ export class HomePage implements AfterViewInit{
     this.controls.update();
   };
 
-  configPlane = () => {
-    const scenePlane = new THREE.PlaneGeometry( window.innerWidth, window.innerHeight);
-    const scenePlaneMaterial = new THREE.MeshBasicMaterial( { side: THREE.DoubleSide, color: new THREE.Color(0,0,0)} );
+  configPlane = (lines, col, radius) => {
+    const scenePlane = new THREE.PlaneGeometry( 100, 100);
+    const scenePlaneMaterial = new THREE.MeshBasicMaterial( { side: THREE.DoubleSide, color: new THREE.Color(1,1,1)} );
     this.plane = new THREE.Mesh( scenePlane, scenePlaneMaterial );
+    // this.plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
   };
 
   keyBufferIncludes = (keyBuffer, key) => {
@@ -131,7 +145,6 @@ export class HomePage implements AfterViewInit{
   };
 
   moveCamera = (key, shift) => {
-    console.log(shift);
     let speed = 1;
     if(shift){
       speed = 3;
@@ -158,11 +171,11 @@ export class HomePage implements AfterViewInit{
     }
   };
 
-  generateHexagon = (x,y,color,objects) => {
+  generateHexagon = (x, y, color, objects, lines, col, radius) => {
 
     const loader = new THREE.TextureLoader();
 
-    const geometry = new THREE.CylinderGeometry( 10, 10, 2, 6 );
+    const geometry = new THREE.CylinderGeometry( 10, 10, 3, 6 );
     //i=0: sides
     //i=1: top
     //i=2: bottom
@@ -175,10 +188,9 @@ export class HomePage implements AfterViewInit{
     const cylinder = new THREE.Mesh( geometry, materials );
     cylinder.rotateX(Math.PI/2);
     cylinder.rotateY(Math.PI/2);
-    cylinder.position.x=x;
-    cylinder.position.y=y;
-    const test = [];
-    test.push(cylinder);
+    const h = radius*Math.cos(Math.PI/6);
+    cylinder.position.x=x-Math.floor(col/2)*(radius+radius*Math.sin(Math.PI/6))+radius*Math.sin(Math.PI/6);
+    cylinder.position.y=y+lines*h/Math.PI;
     objects.push(cylinder);
     this.plane.add( cylinder );
     return objects;
