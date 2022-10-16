@@ -2,6 +2,7 @@ import {AfterViewInit, Component, ElementRef, Input, ViewChild} from '@angular/c
 import * as THREE from 'three';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
 import {DragControls} from 'three/examples/jsm/controls/DragControls';
+import {Platform} from '@ionic/angular';
 
 @Component({
   selector: 'app-home',
@@ -18,8 +19,12 @@ export class HomePage implements AfterViewInit{
   private camera = null;
   private controls = null;
   private plane = null;
+  private raycaster = new THREE.Raycaster();
+  private pointer = new THREE.Vector2();
 
-  constructor() {}
+  constructor(
+    private platform: Platform,
+  ) {}
 
   ngAfterViewInit() {
     const lines = 8;//pair uniquement
@@ -36,7 +41,6 @@ export class HomePage implements AfterViewInit{
 
     // génération de la grid de lines*col sous la forme d'hexagones
     let objects = [];
-    objects.push(this.plane);
     for(let i=0;i<col/2;i++){
       for(let j=0;j<lines/2;j++){
         objects = this.generateHexagon(i*(10 * Math.cos(2*Math.PI)+20),
@@ -53,18 +57,25 @@ export class HomePage implements AfterViewInit{
     dragable.transformGroup=false;
     dragable.addEventListener( 'dragstart',(e) => {
       this.controls.enabled = false;
-      console.log(e);
+      console.log(this.scene.position);
     });
     dragable.addEventListener( 'dragend', (e) => {
       this.controls.enabled = true;
       e.object.position.z=0;
     });
-
     dragable.addEventListener( 'drag', (e) => {
       e.object.position.z=radius/2.5;
-      console.log(e);
-    });
+      this.raycaster.setFromCamera( this.pointer, this.camera );
 
+      // calculate objects intersecting the picking ray
+      const intersects = this.raycaster.intersectObjects(this.scene.children);
+      for(let i=0; i<intersects.length; i++){
+        if(Object(intersects[i]).object.geometry.type==='PlaneGeometry'){
+          e.object.position.x=intersects[i].point.x-this.scene.position.x;
+          e.object.position.y=intersects[i].point.y-this.scene.position.y;
+        }
+      }
+    });
     this.controls.addEventListener('end', (e) => {
       const h = Math.sqrt(Math.pow(this.camera.position.x, 2)
         +Math.pow(this.camera.position.y, 2)
@@ -79,6 +90,7 @@ export class HomePage implements AfterViewInit{
     this.scene.add(this.plane);
 
     let keyBuffer = [];
+
     document.body.addEventListener('keydown', (e) => {
 
       if(!this.keyBufferIncludes(keyBuffer, e.key.toLowerCase())){
@@ -87,13 +99,19 @@ export class HomePage implements AfterViewInit{
       const shift = this.keyBufferIncludes(keyBuffer, 'shift');
       this.keyboardPressed(keyBuffer, shift);
     });
-
     document.body.addEventListener('keyup', (e) => {
       keyBuffer = this.deleteFromKeyBuffer(keyBuffer, e.key.toLowerCase());
     });
+    this.renderer.domElement.addEventListener( 'pointermove', (e) => {
+      this.pointer.x = (e.clientX/this.renderer.domElement.width) * 2 - 1;
+      this.pointer.y = - (e.clientY/this.renderer.domElement.height) * 2 + 1;
+    });
+
+    const vecteur = new THREE.Vector4;
+    this.renderer.getViewport(vecteur);
 
     //fonction qui boucle pour update la caméra
-    this.animate();
+    setInterval(this.animate, 1000/60);
   }
 
   configScene = () => {
@@ -111,9 +129,10 @@ export class HomePage implements AfterViewInit{
     this.renderer = new THREE.WebGLRenderer({
       canvas: this.canvas,
       antialias: true,
-      alpha: true
+      alpha: true,
     });
-    this.renderer.setPixelRatio(devicePixelRatio);
+    // this.renderer.setPixelRatio(devicePixelRatio);
+    this.renderer.setSize(window.innerWidth,window.innerWidth/2);
     this.renderer.setClearColor( 0x000000, 0 );
   };
 
@@ -126,10 +145,13 @@ export class HomePage implements AfterViewInit{
   };
 
   configPlane = (lines, col, radius) => {
-    const scenePlane = new THREE.PlaneGeometry( 100, 100);
+    //hauteur et largeur plateau, petit problème sur la largeur soit sur la gen des hexagones soit sur le calcul de la largeur totale
+    const scenePlane = new THREE.PlaneGeometry(
+      Math.floor(col)*(radius+radius*Math.sin(Math.PI/6))+radius*Math.sin(Math.PI/6)+20,
+      (lines+1)*radius*Math.cos(Math.PI/6)+20
+    );
     const scenePlaneMaterial = new THREE.MeshBasicMaterial( { side: THREE.DoubleSide, color: new THREE.Color(1,1,1)} );
-    this.plane = new THREE.Mesh( scenePlane, scenePlaneMaterial );
-    // this.plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+    this.plane = new THREE.Mesh(scenePlane, scenePlaneMaterial);
   };
 
   keyBufferIncludes = (keyBuffer, key) => {
@@ -213,7 +235,6 @@ export class HomePage implements AfterViewInit{
   };
 
   animate = () => {
-    window.requestAnimationFrame(() => this.animate());
     this.controls.update();
     this.renderer.render(this.scene, this.camera);
   };
