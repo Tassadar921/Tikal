@@ -209,11 +209,11 @@ export class HomePage implements AfterViewInit{
     }
   };
 
-  generateHexagon = (x, y, color, objects, lines, col, radius) => {
+  generateHexagon = (x, y, color, objects, lines, col, radius, dragable = true) => {
 
     const loader = new THREE.TextureLoader();
 
-    const geometry = new THREE.CylinderGeometry( radius, radius, radius/3, 6 );
+    const geometry = new THREE.CylinderGeometry( radius, radius, radius/3, 6);
     //i=0: sides
     //i=1: top
     //i=2: bottom
