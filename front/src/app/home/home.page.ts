@@ -60,7 +60,6 @@ export class HomePage implements AfterViewInit{
     dragable.transformGroup=false;
     dragable.addEventListener( 'dragstart',(e) => {
       this.controls.enabled = false;
-      console.log(this.scene.position);
     });
     dragable.addEventListener( 'dragend', (e) => {
       this.controls.enabled = true;
@@ -69,17 +68,26 @@ export class HomePage implements AfterViewInit{
 
       // calculate objects intersecting the picking ray
       const intersects = this.raycaster.intersectObjects(this.scene.children);
-      console.log(intersects);
+
       for(let i=0; i<intersects.length; i++){
-        if(Object(intersects[i]).object.geometry.type==='CylinderGeometry'){
+        if(Object(intersects[i]).object.geometry.type==='CylinderGeometry'&&Object(intersects[i]).object.children.length){
+          console.log(Object(intersects[i]).object);
           console.log(this.plane.children);
-          for(let p=0; p<objects.length; p++){
-            console.log('on cherche : ', intersects[i].object);
-            console.log('on compare avec : ', this.plane.children[p]);
-            if(objects[p]===intersects[i].object){
+          for(let p=0; p<this.plane.children.length; p++){
+            if(this.plane.children[p]===intersects[i].object){
               console.log('dans le mil');
-              // objects[p]=new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/dirt.png')});
-              // p=this.plane.children.length;
+              console.log(this.plane.children[p]);
+              this.plane.children[p].material[0]=new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/dirt.png')});
+              this.plane.children[p].material[1]=new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/herbe.png')});
+              this.plane.children[p].material[2]=new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/wood.png')});
+              this.plane.remove(e.object);
+              for(let m=0; m<objects.length; m++){
+                if(objects[m]===e.object){
+                  objects.splice(m,1);
+                  m=objects.length;
+                }
+              }
+              p=this.plane.children.length;
             }
           }
           i=intersects.length;
@@ -108,7 +116,7 @@ export class HomePage implements AfterViewInit{
       const p = Math.sqrt(Math.pow(this.camera.position.x, 2)
         +Math.pow(this.camera.position.y, 2));
 
-      console.log(Math.acos(p/h)*(180/Math.PI));
+      // console.log(Math.acos(p/h)*(180/Math.PI));
     });
 
     this.scene.add(this.plane);
@@ -130,9 +138,6 @@ export class HomePage implements AfterViewInit{
       this.pointer.x = (e.clientX/this.renderer.domElement.width) * 2 - 1;
       this.pointer.y = - (e.clientY/this.renderer.domElement.height) * 2 + 1;
     });
-
-    const vecteur = new THREE.Vector4;
-    this.renderer.getViewport(vecteur);
 
     //fonction qui boucle pour update la caméra
     setInterval(this.animate, 1000/60);
@@ -263,16 +268,17 @@ export class HomePage implements AfterViewInit{
     cylinder.position.x=x-Math.floor(col/2)*(radius+radius*Math.sin(Math.PI/6))+radius*Math.sin(Math.PI/6);
     cylinder.position.y=y+lines*h/Math.PI;
 
-    const edgeGeometry = new THREE.EdgesGeometry(geometry);
-    const edgeMaterial = new THREE.LineBasicMaterial({color: 'lightGreen', linewidth: 1});
-    const edgeWireframe = new THREE.LineSegments(edgeGeometry, edgeMaterial);
+    if(!dragable) {
+      const edgeGeometry = new THREE.EdgesGeometry(geometry);
+      const edgeMaterial = new THREE.LineBasicMaterial({color: 'lightGreen', linewidth: 1});
+      const edgeWireframe = new THREE.LineSegments(edgeGeometry, edgeMaterial);
 
-    cylinder.add(edgeWireframe);
-
-    if(dragable) {
+      cylinder.add(edgeWireframe);
+    }else{
       objects.push(cylinder);
     }
-    this.plane.add( cylinder );
+
+    this.plane.add(cylinder);
 
     return objects;
   };
