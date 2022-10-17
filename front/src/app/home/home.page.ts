@@ -56,14 +56,20 @@ export class HomePage implements AfterViewInit{
     objects = this.generateHexagon(0, 0, objects, lines, col, radius, false);
     objects = this.generateHexagon(20, 20, objects, lines, col, radius, true);
 
+    //save xy in case of non-droppable place in which object is dropped
+    let coo = {x:0, y:0};
+
     const dragable = new DragControls(objects, this.camera, this.renderer.domElement);
     dragable.transformGroup=false;
     dragable.addEventListener( 'dragstart',(e) => {
       this.controls.enabled = false;
+      coo.x = e.object.position.x;
+      coo.y = e.object.position.y;
     });
     dragable.addEventListener( 'dragend', (e) => {
       this.controls.enabled = true;
       e.object.position.z=0;
+      let validPlacement = false;
       this.raycaster.setFromCamera( this.pointer, this.camera );
 
       // calculate objects intersecting the picking ray
@@ -71,12 +77,8 @@ export class HomePage implements AfterViewInit{
 
       for(let i=0; i<intersects.length; i++){
         if(Object(intersects[i]).object.geometry.type==='CylinderGeometry'&&Object(intersects[i]).object.children.length){
-          console.log(Object(intersects[i]).object);
-          console.log(this.plane.children);
           for(let p=0; p<this.plane.children.length; p++){
             if(this.plane.children[p]===intersects[i].object){
-              console.log('dans le mil');
-              console.log(this.plane.children[p]);
               this.plane.children[p].material[0]=new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/dirt.png')});
               this.plane.children[p].material[1]=new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/herbe.png')});
               this.plane.children[p].material[2]=new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/wood.png')});
@@ -85,6 +87,7 @@ export class HomePage implements AfterViewInit{
                 if(objects[m]===e.object){
                   objects.splice(m,1);
                   m=objects.length;
+                  validPlacement = true;
                 }
               }
               p=this.plane.children.length;
@@ -92,6 +95,10 @@ export class HomePage implements AfterViewInit{
           }
           i=intersects.length;
         }
+      }
+      if(!validPlacement){
+        e.object.position.x=coo.x;
+        e.object.position.y=coo.y;
       }
     });
     dragable.addEventListener( 'drag', (e) => {
@@ -105,6 +112,16 @@ export class HomePage implements AfterViewInit{
           e.object.position.x=intersects[i].point.x-this.scene.position.x;
           e.object.position.y=intersects[i].point.y-this.scene.position.y;
           i=intersects.length;
+        }else{ //limit dragging to plane borders
+          if(e.object.position.x< -this.plane.geometry.parameters.width/2){
+            e.object.position.x = -this.plane.geometry.parameters.width/2;
+          }else if (e.object.position.x>this.plane.geometry.parameters.width/2){
+            e.object.position.x = this.plane.geometry.parameters.width/2;
+          }else if(e.object.position.y< -this.plane.geometry.parameters.height/2){
+            e.object.position.y = -this.plane.geometry.parameters.height/2;
+          }else if (e.object.position.y>this.plane.geometry.parameters.height/2){
+            e.object.position.y = this.plane.geometry.parameters.height/2;
+          }
         }
       }
     });
