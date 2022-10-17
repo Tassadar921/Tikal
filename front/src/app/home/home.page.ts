@@ -41,17 +41,20 @@ export class HomePage implements AfterViewInit{
 
     // génération de la grid de lines*col sous la forme d'hexagones
     let objects = [];
-    for(let i=0;i<col/2;i++){
-      for(let j=0;j<lines/2;j++){
-        objects = this.generateHexagon(i*(10 * Math.cos(2*Math.PI)+20),
-          j*-2*10*Math.cos(Math.PI/6),
-          'green', objects, lines, col, radius);
+    // for(let i=0;i<col/2;i++){
+    //   for(let j=0;j<lines/2;j++){
+    //     objects = this.generateHexagon(i*(10 * Math.cos(2*Math.PI)+20),
+    //       j*-2*10*Math.cos(Math.PI/6),
+    //       'green', objects, lines, col, radius, false);
+    //
+    //     objects = this.generateHexagon(15 + i*(10 * Math.cos(2*Math.PI)+20),
+    //       10*Math.sin(2*Math.PI/6)+j*-2*10*Math.cos(Math.PI/6),
+    //       'green', objects, lines, col, radius, false);
+    //   }
+    // }
 
-        objects = this.generateHexagon(15 + i*(10 * Math.cos(2*Math.PI)+20),
-          10*Math.sin(2*Math.PI/6)+j*-2*10*Math.cos(Math.PI/6),
-          'green', objects, lines, col, radius);
-      }
-    }
+    objects = this.generateHexagon(0, 0, objects, lines, col, radius, false);
+    objects = this.generateHexagon(20, 20, objects, lines, col, radius, true);
 
     const dragable = new DragControls(objects, this.camera, this.renderer.domElement);
     dragable.transformGroup=false;
@@ -62,6 +65,26 @@ export class HomePage implements AfterViewInit{
     dragable.addEventListener( 'dragend', (e) => {
       this.controls.enabled = true;
       e.object.position.z=0;
+      this.raycaster.setFromCamera( this.pointer, this.camera );
+
+      // calculate objects intersecting the picking ray
+      const intersects = this.raycaster.intersectObjects(this.scene.children);
+      console.log(intersects);
+      for(let i=0; i<intersects.length; i++){
+        if(Object(intersects[i]).object.geometry.type==='CylinderGeometry'){
+          console.log(this.plane.children);
+          for(let p=0; p<objects.length; p++){
+            console.log('on cherche : ', intersects[i].object);
+            console.log('on compare avec : ', this.plane.children[p]);
+            if(objects[p]===intersects[i].object){
+              console.log('dans le mil');
+              // objects[p]=new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/dirt.png')});
+              // p=this.plane.children.length;
+            }
+          }
+          i=intersects.length;
+        }
+      }
     });
     dragable.addEventListener( 'drag', (e) => {
       e.object.position.z=radius/2.5;
@@ -73,6 +96,7 @@ export class HomePage implements AfterViewInit{
         if(Object(intersects[i]).object.geometry.type==='PlaneGeometry'){
           e.object.position.x=intersects[i].point.x-this.scene.position.x;
           e.object.position.y=intersects[i].point.y-this.scene.position.y;
+          i=intersects.length;
         }
       }
     });
@@ -150,8 +174,9 @@ export class HomePage implements AfterViewInit{
       Math.floor(col)*(radius+radius*Math.sin(Math.PI/6))+radius*Math.sin(Math.PI/6)+20,
       (lines+1)*radius*Math.cos(Math.PI/6)+20
     );
-    const scenePlaneMaterial = new THREE.MeshBasicMaterial( { side: THREE.DoubleSide, color: new THREE.Color(1,1,1)} );
-    this.plane = new THREE.Mesh(scenePlane, scenePlaneMaterial);
+    const planeMaterial = new THREE.MeshBasicMaterial({opacity:0, transparent:true});
+    // const planeMaterial = new THREE.MeshBasicMaterial({});
+    this.plane = new THREE.Mesh(scenePlane, planeMaterial);
   };
 
   keyBufferIncludes = (keyBuffer, key) => {
@@ -209,7 +234,9 @@ export class HomePage implements AfterViewInit{
     }
   };
 
-  generateHexagon = (x, y, color, objects, lines, col, radius, dragable = true) => {
+  generateHexagon = (x, y, objects, lines, col, radius, dragable = true) => {
+
+    console.log('on génère');
 
     const loader = new THREE.TextureLoader();
 
@@ -217,11 +244,17 @@ export class HomePage implements AfterViewInit{
     //i=0: sides
     //i=1: top
     //i=2: bottom
-    const materials = [
-      new THREE.MeshBasicMaterial({map: loader.load('./assets/dirt.png')}),
-      new THREE.MeshBasicMaterial({map: loader.load('./assets/herbe.png')}),
-      new THREE.MeshBasicMaterial({map: loader.load('./assets/wood.png')}),
-    ];
+    const materials = [];
+
+    if(!dragable) {
+      materials.push(new THREE.MeshBasicMaterial({transparent: true, opacity: 0}));
+      materials.push(new THREE.MeshBasicMaterial({transparent: true, opacity: 0}));
+      materials.push(new THREE.MeshBasicMaterial({transparent: true, opacity: 0}));
+    }else{
+      materials.push(new THREE.MeshBasicMaterial({map: loader.load('./assets/dirt.png')}));
+      materials.push(new THREE.MeshBasicMaterial({map: loader.load('./assets/herbe.png')}));
+      materials.push(new THREE.MeshBasicMaterial({map: loader.load('./assets/wood.png')}));
+    }
 
     const cylinder = new THREE.Mesh( geometry, materials );
     cylinder.rotateX(Math.PI/2);
@@ -229,8 +262,18 @@ export class HomePage implements AfterViewInit{
     const h = radius*Math.cos(Math.PI/6);
     cylinder.position.x=x-Math.floor(col/2)*(radius+radius*Math.sin(Math.PI/6))+radius*Math.sin(Math.PI/6);
     cylinder.position.y=y+lines*h/Math.PI;
-    objects.push(cylinder);
+
+    const edgeGeometry = new THREE.EdgesGeometry(geometry);
+    const edgeMaterial = new THREE.LineBasicMaterial({color: 'lightGreen', linewidth: 1});
+    const edgeWireframe = new THREE.LineSegments(edgeGeometry, edgeMaterial);
+
+    cylinder.add(edgeWireframe);
+
+    if(dragable) {
+      objects.push(cylinder);
+    }
     this.plane.add( cylinder );
+
     return objects;
   };
 
