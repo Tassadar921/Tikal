@@ -65,9 +65,22 @@ export class HomePage implements AfterViewInit{
       this.controls.enabled = false;
       coo.x = e.object.position.x;
       coo.y = e.object.position.y;
+
+      document.body.addEventListener('keydown', (input)=>{
+        if(input.key.toLowerCase()==='r'){
+          e.object.rotateY(Math.PI/3)
+          console.log('test');
+        }
+      });
     });
     dragable.addEventListener( 'dragend', (e) => {
       this.controls.enabled = true;
+      document.body.removeEventListener('keydown', (input)=>{
+        if(input.key.toLowerCase()==='r'){
+          e.object.rotateY(Math.PI/3)
+          console.log('test');
+        }
+      });
       e.object.position.z=0;
       let validPlacement = false;
       this.raycaster.setFromCamera( this.pointer, this.camera );
@@ -102,6 +115,7 @@ export class HomePage implements AfterViewInit{
       }
     });
     dragable.addEventListener( 'drag', (e) => {
+
       e.object.position.z=radius/2.5;
       this.raycaster.setFromCamera( this.pointer, this.camera );
 
@@ -222,7 +236,7 @@ export class HomePage implements AfterViewInit{
 
   keyboardPressed = (keyBuffer, shift) => {
     for(const key of keyBuffer) {
-      if (key === 'z' || key === 'q' || key === 's' || key === 'd' || key === 'r' || key === 'f') {
+      if (key === 'z' || key === 'q' || key === 's' || key === 'd' || key === 'p' || key === 'm') {
         this.moveCamera(key, shift);
       }
       this.controls.update();
@@ -247,11 +261,11 @@ export class HomePage implements AfterViewInit{
       case 'd':
         this.scene.position.x-=speed;
         break;
-      case 'f':
-        this.scene.position.z-=speed;
-        break;
-      case 'r':
+      case 'p':
         this.scene.position.z+=speed;
+        break;
+      case 'm':
+        this.scene.position.z-=speed;
         break;
     }
   };
