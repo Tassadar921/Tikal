@@ -2,7 +2,6 @@ import {AfterViewInit, Component, ElementRef, Input, ViewChild} from '@angular/c
 import * as THREE from 'three';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
 import {DragControls} from 'three/examples/jsm/controls/DragControls';
-import {Platform} from '@ionic/angular';
 
 @Component({
   selector: 'app-home',
@@ -23,10 +22,7 @@ export class HomePage implements AfterViewInit {
   private pointer = new THREE.Vector2();
   private matrix = [];
 
-  constructor(
-    private platform: Platform,
-  ) {
-  }
+  constructor() {}
 
   ngAfterViewInit() {
     const lines = 8;
@@ -93,23 +89,31 @@ export class HomePage implements AfterViewInit {
       while (!(Object(intersects[i]).object.geometry.type === 'CylinderGeometry' && Object(intersects[i]).object.children.length)) {
         i++;
       }
-        const object = this.matrix[this.plane.getObjectById(intersects[i].object.id).userData.y][this.plane.getObjectById(intersects[i].object.id).userData.x];
-        object.children = [];
-        object.material[0] = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/dirt.png')});
-        object.material[1] = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/herbe.png')});
-        object.material[2] = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/wood.png')});
-        object.rotation.x = e.object.rotation.x;
-        object.rotation.y = e.object.rotation.y;
-        object.rotation.z = e.object.rotation.z;
-        this.plane.remove(e.object);
-        for (let m = 0; m < objects.length; m++) {
-          if (objects[m] === e.object) {
-            objects.splice(m, 1);
-            m = objects.length;
-            validPlacement = true;
-            objects = this.generateHexagon(-1, 5, objects, lines, col, radius, true);
-          }
+        const object = this.matrix[this.plane.getObjectById(intersects[i].object.id).userData.y]
+          [this.plane.getObjectById(intersects[i].object.id).userData.x];
+      for(i=object.userData.x-1; i<object.userData.x+2; i++) {
+        for (let j = object.userData.y - 1; j < object.userData.y + 2; j++) {
+          
         }
+      }
+          object.children = [];
+          object.material[0] = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/dirt.png')});
+          object.material[1] = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/herbe.png')});
+          object.material[2] = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/wood.png')});
+          object.rotation.x = e.object.rotation.x;
+          object.rotation.y = e.object.rotation.y;
+          object.rotation.z = e.object.rotation.z;
+          this.plane.remove(e.object);
+          for (let m = 0; m < objects.length; m++) {
+            if (objects[m] === e.object) {
+              objects.splice(m, 1);
+              m = objects.length;
+              validPlacement = true;
+              objects = this.generateHexagon(-1, 5, objects, lines, col, radius, true);
+            }
+          }
+
+
       if (!validPlacement) {
         e.object.position.x = coo.x;
         e.object.position.y = coo.y;
@@ -119,7 +123,6 @@ export class HomePage implements AfterViewInit {
           obj.visible = false;
         }
       }
-      numberRotation = 0;
     });
     dragable.addEventListener('drag', (e) => {
 
