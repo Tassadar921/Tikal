@@ -22,7 +22,8 @@ export class HomePage implements AfterViewInit {
   private pointer = new THREE.Vector2();
   private matrix = [];
 
-  constructor() {}
+  constructor() {
+  }
 
   ngAfterViewInit() {
     const lines = 8;
@@ -80,22 +81,28 @@ export class HomePage implements AfterViewInit {
         }
       });
       e.object.position.z = 0;
-      let validPlacement = false;
+      let validPlacement = true;
       this.raycaster.setFromCamera(this.pointer, this.camera);
 
       const intersects = this.raycaster.intersectObjects(this.scene.children);
       let i = 0;
 
-      while (!(Object(intersects[i]).object.geometry.type === 'CylinderGeometry' && Object(intersects[i]).object.children.length)) {
-        i++;
-      }
-        const object = this.matrix[this.plane.getObjectById(intersects[i].object.id).userData.y]
-          [this.plane.getObjectById(intersects[i].object.id).userData.x];
-      for(i=object.userData.x-1; i<object.userData.x+2; i++) {
-        for (let j = object.userData.y - 1; j < object.userData.y + 2; j++) {
-          
+      while (!(Object(intersects[i]).object.geometry.type === 'CylinderGeometry' && Object(intersects[i]).object.children.length)&&validPlacement) {
+        if(i<intersects.length-1) {
+          i++;
+        }else{
+          validPlacement = false;
         }
       }
+      if(validPlacement) {
+        const object = this.matrix[this.plane.getObjectById(intersects[i].object.id).userData.y]
+          [this.plane.getObjectById(intersects[i].object.id).userData.x];
+        for (i = object.userData.x; i < object.userData.x + 2; i++) {
+          for (let j = object.userData.y - 1; j < object.userData.y + 2; j++) {
+            //check adjacent objects to see of placement is still valid, if not toggle validPlacement
+          }
+        }
+        if(validPlacement) {
           object.children = [];
           object.material[0] = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/dirt.png')});
           object.material[1] = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/herbe.png')});
@@ -112,12 +119,12 @@ export class HomePage implements AfterViewInit {
               objects = this.generateHexagon(-1, 5, objects, lines, col, radius, true);
             }
           }
-
-
-      if (!validPlacement) {
+        }
+      }else{
         e.object.position.x = coo.x;
         e.object.position.y = coo.y;
       }
+
       for (const obj of this.plane.children) {
         if (obj.children.length && obj.geometry.type === 'CylinderGeometry') {
           obj.visible = false;
