@@ -42,13 +42,21 @@ export class HomePage implements AfterViewInit {
     // génération de la grid de lines*col sous la forme d'hexagones
     let objects = [];
 
-    for (let x = 0; x < lines / 2; x++) {
+    for (let x = 0; x < lines; x++) {
       for (let y = 0; y < col; y++) {
-        objects = this.generateHexagon(x, y, objects, lines, col, radius, false);
+        if((x+1)%2) { //si l'indice de la ligne est pair
+          if ((y + 1) % 2) { //et que l'indice de la colonne est pair
+            objects = this.generateHexagon(x, y, objects, lines, col, radius, false);
+          }
+        }else{
+          if (y % 2) { //et que l'indice de la colonne est pair
+            objects = this.generateHexagon(x, y, objects, lines, col, radius, false);
+          }
+        }
       }
     }
 
-    objects = this.generateHexagon(-1, 5, objects, lines, col, radius, true);
+    objects = this.generateHexagon(-2, 5, objects, lines, col, radius, true);
 
     //save xy in case of non-droppable place in which object is dropped
     const coo = {x: 0, y: 0};
@@ -74,6 +82,7 @@ export class HomePage implements AfterViewInit {
       });
     });
     dragable.addEventListener('dragend', (e) => {
+      console.log('====================================');
       this.controls.enabled = true;
       document.body.removeEventListener('keydown', (input) => {
         if (input.key.toLowerCase() === 'r') {
@@ -81,45 +90,69 @@ export class HomePage implements AfterViewInit {
         }
       });
       e.object.position.z = 0;
-      let validPlacement = true;
+      let validPlacement = false;
       this.raycaster.setFromCamera(this.pointer, this.camera);
 
       const intersects = this.raycaster.intersectObjects(this.scene.children);
-      let i = 0;
+      let id = 0;
 
-      while (!(Object(intersects[i]).object.geometry.type === 'CylinderGeometry' && Object(intersects[i]).object.children.length)&&validPlacement) {
-        if(i<intersects.length-1) {
-          i++;
-        }else{
-          validPlacement = false;
-        }
-      }
-      if(validPlacement) {
-        const object = this.matrix[this.plane.getObjectById(intersects[i].object.id).userData.y]
-          [this.plane.getObjectById(intersects[i].object.id).userData.x];
-        for (i = object.userData.x; i < object.userData.x + 2; i++) {
-          for (let j = object.userData.y - 1; j < object.userData.y + 2; j++) {
-            //check adjacent objects to see of placement is still valid, if not toggle validPlacement
+      for(let i=0; i<intersects.length; i++){
+        if(Object(intersects[i]).object.geometry.type === 'CylinderGeometry' && Object(intersects[i]).object.children.length){
+          id=Object(intersects[i]).object.id;
+          i=intersects.length;
+
+          const object = this.matrix[this.plane.getObjectById(id).userData.x]
+            [this.plane.getObjectById(id).userData.y];
+          // console.log('object x : ', object.userData.x);
+          // console.log('object y : ', object.userData.y);
+
+          for(const x0 of [object.userData.x-1,object.userData.x+1]){
+            for(const y0 of [object.userData.y-1,object.userData.y+1]){
+              let x = x0;
+              let y = y0;
+              if(x<0){x+=2;
+              }else if(x>this.matrix.length-1){x=this.matrix.length-2;
+              }else if(y<0){y+=2;
+              }else if(y>this.matrix[0].length-1){y=this.matrix[0].length-2}
+
+              console.log('('+x+','+y+')');
+              console.log(this.matrix[x][y].children.length);
+              if(!this.matrix[x][y].children.length){
+                validPlacement = true;
+              }
+            }
           }
-        }
-        if(validPlacement) {
-          object.children = [];
-          object.material[0] = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/dirt.png')});
-          object.material[1] = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/herbe.png')});
-          object.material[2] = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/wood.png')});
-          object.rotation.x = e.object.rotation.x;
-          object.rotation.y = e.object.rotation.y;
-          object.rotation.z = e.object.rotation.z;
-          this.plane.remove(e.object);
-          for (let m = 0; m < objects.length; m++) {
-            if (objects[m] === e.object) {
-              objects.splice(m, 1);
-              m = objects.length;
+
+          for(const x0 of [object.userData.x-2,object.userData.x,object.userData.x+2]){
+            let x = x0;
+            if(x<0){x+=2;
+            }else if(x>this.matrix.length-1){x=this.matrix.length-2;}
+            if(!this.matrix[x][object.userData.y].children.length){
               validPlacement = true;
-              objects = this.generateHexagon(-1, 5, objects, lines, col, radius, true);
+            }
+          }
+
+          if(validPlacement) {
+            object.children = [];
+            object.material[0] = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/dirt.png')});
+            object.material[1] = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/herbe.png')});
+            object.material[2] = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/wood.png')});
+            object.rotation.x = e.object.rotation.x;
+            object.rotation.y = e.object.rotation.y;
+            object.rotation.z = e.object.rotation.z;
+            this.plane.remove(e.object);
+            for (let m = 0; m < objects.length; m++) {
+              if (objects[m] === e.object) {
+                objects.splice(m, 1);
+                m = objects.length;
+                objects = this.generateHexagon(-1, 5, objects, lines, col, radius, true);
+              }
             }
           }
         }
+      }
+      if(validPlacement) {
+
       }else{
         e.object.position.x = coo.x;
         e.object.position.y = coo.y;
@@ -156,16 +189,6 @@ export class HomePage implements AfterViewInit {
         }
       }
     });
-    this.controls.addEventListener('end', (e) => {
-      const h = Math.sqrt(Math.pow(this.camera.position.x, 2)
-        + Math.pow(this.camera.position.y, 2)
-        + Math.pow(this.camera.position.z, 2));
-
-      const p = Math.sqrt(Math.pow(this.camera.position.x, 2)
-        + Math.pow(this.camera.position.y, 2));
-
-      // console.log(Math.acos(p/h)*(180/Math.PI));
-    });
 
     this.scene.add(this.plane);
 
@@ -189,6 +212,10 @@ export class HomePage implements AfterViewInit {
     this.matrix[0][0].material[0] = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/dirt.png')});
     this.matrix[0][0].material[1] = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/herbe.png')});
     this.matrix[0][0].material[2] = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/wood.png')});
+
+    console.log(this.matrix);
+    console.log('id max colonnes : ', this.matrix[0].length-1);
+    console.log('id max lignes : ', this.matrix.length-1);
 
     setInterval(this.animate, 1000 / 60);
   }
@@ -234,7 +261,7 @@ export class HomePage implements AfterViewInit {
   };
 
   initMatrix = (line, col) => {
-    for (let l = 0; l < line / 2; l++) {
+    for (let l = 0; l < line; l++) {
       this.matrix.push([]);
       for (let c = 0; c < col; c++) {
         this.matrix[l].push('');
@@ -299,8 +326,9 @@ export class HomePage implements AfterViewInit {
 
   generateHexagon = (y, x, objects, lines, col, radius, dragable = true) => {
 
-    const cylinderX = x * (10 * Math.cos(2 * Math.PI) + 20);
-    const cylinderY = (x % 2) * 10 * Math.sin(2 * Math.PI / 6) + y * -2 * 10 * Math.cos(Math.PI / 6);
+    const cylinderX = x * (radius * Math.cos(2 * Math.PI) + 2*radius);
+    const cylinderY = -y*radius*Math.cos(Math.PI/6);
+    //                  si x pair       radius*sin(2*PI/6))            dans tous les cas -2y*radius*cos(pi/6)
 
     const loader = new THREE.TextureLoader();
 
@@ -337,11 +365,10 @@ export class HomePage implements AfterViewInit {
       if (x === 0 && y === 0) {
         cylinder.children = [];
         cylinder.visible = true;
+      }else{
+        // cylinder.visible = false;
       }
-      cylinder.userData = {x, y};
-      if (x !== 0 || y !== 0) {
-        cylinder.visible = false;
-      }
+      cylinder.userData = {x:y, y:x};
 
       this.matrix[y][x] = cylinder;
     } else {
