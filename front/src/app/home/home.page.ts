@@ -54,6 +54,7 @@ export class HomePage implements AfterViewInit{
 
     //save xy in case of non-droppable place in which object is dropped
     const coo = {x:0, y:0};
+    let numberRotation = 0;
 
     const dragable = new DragControls(objects, this.camera, this.renderer.domElement);
     dragable.transformGroup=false;
@@ -70,9 +71,7 @@ export class HomePage implements AfterViewInit{
 
       document.body.addEventListener('keydown', (input)=>{
         if(input.key.toLowerCase()==='r'){
-          console.log('AVANT : ', e.object.rotation);
           e.object.rotateY(Math.PI/3);
-          console.log('APRES : ', e.object.rotation);
         }
       });
     });
@@ -87,7 +86,6 @@ export class HomePage implements AfterViewInit{
       let validPlacement = false;
       this.raycaster.setFromCamera(this.pointer, this.camera);
 
-      // calculate objects intersecting the picking ray
       const intersects = this.raycaster.intersectObjects(this.scene.children);
 
       for(let i=0; i<intersects.length; i++){
@@ -96,14 +94,12 @@ export class HomePage implements AfterViewInit{
             if(this.plane.children[p]===intersects[i].object){
               this.plane.children[p].children=[];
               this.plane.children[p].material[0]=new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/dirt.png')});
-              this.plane.children[p].material[1]=new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/herbe2.png')});
+              this.plane.children[p].material[1]=new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/herbe.png')});
               this.plane.children[p].material[2]=new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/wood.png')});
-              // this.plane.children[p].rotateX(e.object.rotation.x);
-              console.log(e.object.rotation);
-              this.plane.children[p].rotateY(e.object.rotation.y);
-              this.plane.children[p].rotateZ(e.object.rotation.z);
+              this.plane.children[p].rotation.x=e.object.rotation.x;
+              this.plane.children[p].rotation.y=e.object.rotation.y;
+              this.plane.children[p].rotation.z=e.object.rotation.z;
               this.plane.remove(e.object);
-              console.log('COPIED OBJECT : ', this.plane.children[p].rotation);
               for(let m=0; m<objects.length; m++){
                 if(objects[m]===e.object){
                   objects.splice(m,1);
@@ -127,6 +123,7 @@ export class HomePage implements AfterViewInit{
           object.visible=false;
         }
       }
+      numberRotation = 0;
     });
     dragable.addEventListener( 'drag', (e) => {
 
@@ -184,7 +181,7 @@ export class HomePage implements AfterViewInit{
       this.pointer.y = - (e.clientY/this.renderer.domElement.height) * 2 + 1;
     });
     this.matrix[0][0].material[0]=new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/dirt.png')});
-    this.matrix[0][0].material[1]=new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/herbe2.png')});
+    this.matrix[0][0].material[1]=new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/herbe.png')});
     this.matrix[0][0].material[2]=new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/wood.png')});
 
     setInterval(this.animate, 1000/60);
@@ -313,7 +310,7 @@ export class HomePage implements AfterViewInit{
       materials.push(new THREE.MeshBasicMaterial({transparent: true, opacity: 0}));
     }else{
       materials.push(new THREE.MeshBasicMaterial({map: loader.load('./assets/dirt.png')}));
-      materials.push(new THREE.MeshBasicMaterial({map: loader.load('./assets/herbe2.png')}));
+      materials.push(new THREE.MeshBasicMaterial({map: loader.load('./assets/herbe.png')}));
       materials.push(new THREE.MeshBasicMaterial({map: loader.load('./assets/wood.png')}));
     }
 
