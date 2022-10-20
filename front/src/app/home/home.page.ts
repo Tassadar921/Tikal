@@ -2,6 +2,8 @@ import {AfterViewInit, Component, ElementRef, Input, ViewChild} from '@angular/c
 import * as THREE from 'three';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
 import {DragControls} from 'three/examples/jsm/controls/DragControls';
+import {MovementsService} from '../shared/services/movements.service';
+import {InitializationService} from '../shared/services/initialization.service';
 
 @Component({
   selector: 'app-home',
@@ -22,8 +24,10 @@ export class HomePage implements AfterViewInit {
   private pointer = new THREE.Vector2();
   private matrix = [];
 
-  constructor() {
-  }
+  constructor(
+    private movementsService: MovementsService,
+    private initializationService: InitializationService
+  ) {}
 
   ngAfterViewInit() {
     const lines = 8;
@@ -33,34 +37,42 @@ export class HomePage implements AfterViewInit {
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.5, 1000);
     this.configScene();
-    this.configCamera();
+    this.configCamera(this.canvas);
     this.configRenderer();
     this.configControls();
-    this.configPlane(lines, col, radius);
+    this.plane = this.initializationService.configPlane(lines, col, radius);
     this.initMatrix(lines, col);
 
-    // génération de la grid de lines*col sous la forme d'hexagones
+    //contains each dragable element
     let objects = [];
 
-    for (let x = 0; x < lines; x++) {
-      for (let y = 0; y < col; y++) {
-        if((x+1)%2) { //si l'indice de la ligne est pair
-          if ((y + 1) % 2) { //et que l'indice de la colonne est pair
+    //gen of matrix, like
+
+    //[ object, '', object, '', object]
+    //[ '', object, '', object, '']
+    //[ object, '', object, '', object]
+    //[ '', object, '', object, '']
+
+    //thought to make operations easier on neightbours
+    for (let y = 0; y < lines; y++) {
+      for (let x = 0; x < col; x++) {
+        if((y+1)%2) { //if index of line is even
+          if ((x + 1) % 2) { //if index of col is even
             objects = this.generateHexagon(x, y, objects, lines, col, radius, false);
           }
         }else{
-          if (y % 2) { //et que l'indice de la colonne est pair
+          if (x % 2) { //if line and col both odd
             objects = this.generateHexagon(x, y, objects, lines, col, radius, false);
           }
         }
       }
     }
 
-    objects = this.generateHexagon(-2, 5, objects, lines, col, radius, true);
+    //creating a draggable object for testing
+    objects = this.generateHexagon(5, -2, objects, lines, col, radius, true);
 
     //save xy in case of non-droppable place in which object is dropped
     const coo = {x: 0, y: 0};
-    let numberRotation = 0;
 
     const dragable = new DragControls(objects, this.camera, this.renderer.domElement);
     dragable.transformGroup = false;
@@ -82,7 +94,6 @@ export class HomePage implements AfterViewInit {
       });
     });
     dragable.addEventListener('dragend', (e) => {
-      console.log('====================================');
       this.controls.enabled = true;
       document.body.removeEventListener('keydown', (input) => {
         if (input.key.toLowerCase() === 'r') {
@@ -103,8 +114,6 @@ export class HomePage implements AfterViewInit {
 
           const object = this.matrix[this.plane.getObjectById(id).userData.x]
             [this.plane.getObjectById(id).userData.y];
-          // console.log('object x : ', object.userData.x);
-          // console.log('object y : ', object.userData.y);
 
           for(const x0 of [object.userData.x-1,object.userData.x+1]){
             for(const y0 of [object.userData.y-1,object.userData.y+1]){
@@ -113,10 +122,8 @@ export class HomePage implements AfterViewInit {
               if(x<0){x+=2;
               }else if(x>this.matrix.length-1){x=this.matrix.length-2;
               }else if(y<0){y+=2;
-              }else if(y>this.matrix[0].length-1){y=this.matrix[0].length-2}
+              }else if(y>this.matrix[0].length-1){y=this.matrix[0].length-2;}
 
-              console.log('('+x+','+y+')');
-              console.log(this.matrix[x][y].children.length);
               if(!this.matrix[x][y].children.length){
                 validPlacement = true;
               }
@@ -145,7 +152,7 @@ export class HomePage implements AfterViewInit {
               if (objects[m] === e.object) {
                 objects.splice(m, 1);
                 m = objects.length;
-                objects = this.generateHexagon(-1, 5, objects, lines, col, radius, true);
+                objects = this.generateHexagon(5, -2, objects, lines, col, radius, true);
               }
             }
           }
@@ -176,16 +183,6 @@ export class HomePage implements AfterViewInit {
           e.object.position.x = intersects[i].point.x - this.scene.position.x;
           e.object.position.y = intersects[i].point.y - this.scene.position.y;
           i = intersects.length;
-        } else { //limit dragging to plane borders
-          if (e.object.position.x < -this.plane.geometry.parameters.width / 2) {
-            e.object.position.x = -this.plane.geometry.parameters.width / 2;
-          } else if (e.object.position.x > this.plane.geometry.parameters.width / 2) {
-            e.object.position.x = this.plane.geometry.parameters.width / 2;
-          } else if (e.object.position.y < -this.plane.geometry.parameters.height / 2) {
-            e.object.position.y = -this.plane.geometry.parameters.height / 2;
-          } else if (e.object.position.y > this.plane.geometry.parameters.height / 2) {
-            e.object.position.y = this.plane.geometry.parameters.height / 2;
-          }
         }
       }
     });
@@ -196,14 +193,14 @@ export class HomePage implements AfterViewInit {
 
     document.body.addEventListener('keydown', (e) => {
 
-      if (!this.keyBufferIncludes(keyBuffer, e.key.toLowerCase())) {
+      if (!this.movementsService.keyBufferIncludes(keyBuffer, e.key.toLowerCase())) {
         keyBuffer.push(e.key.toLowerCase());
       }
-      const shift = this.keyBufferIncludes(keyBuffer, 'shift');
-      this.keyboardPressed(keyBuffer, shift);
+      const shift = this.movementsService.keyBufferIncludes(keyBuffer, 'shift');
+      this.scene = this.movementsService.keyboardPressed(keyBuffer, shift, this.scene);
     });
     document.body.addEventListener('keyup', (e) => {
-      keyBuffer = this.deleteFromKeyBuffer(keyBuffer, e.key.toLowerCase());
+      keyBuffer = this.movementsService.deleteFromKeyBuffer(keyBuffer, e.key.toLowerCase());
     });
     this.renderer.domElement.addEventListener('pointermove', (e) => {
       this.pointer.x = (e.clientX / this.renderer.domElement.width) * 2 - 1;
@@ -214,8 +211,6 @@ export class HomePage implements AfterViewInit {
     this.matrix[0][0].material[2] = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/wood.png')});
 
     console.log(this.matrix);
-    console.log('id max colonnes : ', this.matrix[0].length-1);
-    console.log('id max lignes : ', this.matrix.length-1);
 
     setInterval(this.animate, 1000 / 60);
   }
@@ -224,8 +219,8 @@ export class HomePage implements AfterViewInit {
     this.scene.background = new THREE.Color(0, 0, 0);
   };
 
-  configCamera = () => {
-    this.camera.aspect = this.calculateAspectRatio();
+  configCamera = (canvas) => {
+    this.camera.aspect = this.initializationService.calculateAspectRatio(canvas);
     this.camera.updateProjectionMatrix();
     this.camera.position.set(0, 0, 150);
     this.camera.lookAt(this.scene.position);
@@ -250,16 +245,6 @@ export class HomePage implements AfterViewInit {
     this.controls.update();
   };
 
-  configPlane = (lines, col, radius) => {
-    const scenePlane = new THREE.PlaneGeometry(
-      Math.floor(col) * (radius + radius * Math.sin(Math.PI / 6)) + radius * Math.sin(Math.PI / 6) + 1000,
-      (lines + 1) * radius * Math.cos(Math.PI / 6) + 1000
-    );
-    const planeMaterial = new THREE.MeshBasicMaterial({opacity: 0, transparent: true});
-    // const planeMaterial = new THREE.MeshBasicMaterial({});
-    this.plane = new THREE.Mesh(scenePlane, planeMaterial);
-  };
-
   initMatrix = (line, col) => {
     for (let l = 0; l < line; l++) {
       this.matrix.push([]);
@@ -269,62 +254,7 @@ export class HomePage implements AfterViewInit {
     }
   };
 
-  keyBufferIncludes = (keyBuffer, key) => {
-    for (const line of keyBuffer) {
-      if (line === key) {
-        return true;
-      }
-    }
-    return false;
-  };
-
-  deleteFromKeyBuffer = (keyBuffer, key) => {
-    for (let i = 0; i < keyBuffer.length; i++) {
-      if (keyBuffer[i] === key) {
-        keyBuffer.splice(i, 1);
-        return keyBuffer;
-      }
-    }
-    return keyBuffer;
-  };
-
-  keyboardPressed = (keyBuffer, shift) => {
-    for (const key of keyBuffer) {
-      if (key === 'z' || key === 'q' || key === 's' || key === 'd' || key === 'p' || key === 'm') {
-        this.moveCamera(key, shift);
-      }
-      this.controls.update();
-    }
-  };
-
-  moveCamera = (key, shift) => {
-    let speed = 1;
-    if (shift) {
-      speed = 3;
-    }
-    switch (key) {
-      case 'z':
-        this.scene.position.y -= speed;
-        break;
-      case 'q':
-        this.scene.position.x += speed;
-        break;
-      case 's':
-        this.scene.position.y += speed;
-        break;
-      case 'd':
-        this.scene.position.x -= speed;
-        break;
-      case 'p':
-        this.scene.position.z += speed;
-        break;
-      case 'm':
-        this.scene.position.z -= speed;
-        break;
-    }
-  };
-
-  generateHexagon = (y, x, objects, lines, col, radius, dragable = true) => {
+  generateHexagon = (x, y, objects, lines, col, radius, dragable = true) => {
 
     const cylinderX = x * (radius * Math.cos(2 * Math.PI) + 2*radius);
     const cylinderY = -y*radius*Math.cos(Math.PI/6);
@@ -366,7 +296,7 @@ export class HomePage implements AfterViewInit {
         cylinder.children = [];
         cylinder.visible = true;
       }else{
-        // cylinder.visible = false;
+        cylinder.visible = false;
       }
       cylinder.userData = {x:y, y:x};
 
@@ -383,15 +313,6 @@ export class HomePage implements AfterViewInit {
   animate = () => {
     this.controls.update();
     this.renderer.render(this.scene, this.camera);
-  };
-
-  calculateAspectRatio = () => {
-    const height = this.canvas.clientHeight;
-    if (height === 0) {
-      return 0;
-    } else {
-      return this.canvas.clientWidth / this.canvas.clientHeight;
-    }
   };
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
