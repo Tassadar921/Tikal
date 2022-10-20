@@ -7,6 +7,7 @@ export class MovementsService {
 
   constructor() { }
 
+  //checks if keyBuffer includes key, returning boolean
   keyBufferIncludes = (keyBuffer, key) => {
     for (const line of keyBuffer) {
       if (line === key) {
@@ -16,6 +17,7 @@ export class MovementsService {
     return false;
   };
 
+  //deletes key from keyBuffer, returning keyBuffer without it
   deleteFromKeyBuffer = (keyBuffer, key) => {
     for (let i = 0; i < keyBuffer.length; i++) {
       if (keyBuffer[i] === key) {
@@ -26,40 +28,42 @@ export class MovementsService {
     return keyBuffer;
   };
 
-  keyboardPressed = (keyBuffer, shift, scene) => {
+  //triggered as long as any key is pressed, returning updated scene
+  keyboardPressed = (keyBuffer, shift, sceneAndCamera) => {
     for (const key of keyBuffer) {
       if (key === 'z' || key === 'q' || key === 's' || key === 'd' || key === 'p' || key === 'm') {
-        scene = this.moveCamera(key, shift, scene);
+        sceneAndCamera = this.moveCamera(key, shift, sceneAndCamera);
       }
     }
-    return scene;
+    return sceneAndCamera;
   };
 
-  moveCamera = (key, shift, scene) => {
+  //triggered as long as any key linked to scene's movement is pressed, updating scene's position and returning it
+  moveCamera = (key, shift, sceneAndCamera) => {
     let speed = 1;
     if (shift) {
       speed = 3;
     }
     switch (key) {
       case 'z':
-        scene.position.y -= speed;
+        sceneAndCamera.scene.position.y -= speed;
         break;
       case 'q':
-        scene.position.x += speed;
+        sceneAndCamera.scene.position.x += speed;
         break;
       case 's':
-        scene.position.y += speed;
+        sceneAndCamera.scene.position.y += speed;
         break;
       case 'd':
-        scene.position.x -= speed;
+        sceneAndCamera.scene.position.x -= speed;
         break;
       case 'p':
-        scene.position.z += speed;
+        sceneAndCamera.camera.position.z -= speed;
         break;
       case 'm':
-        scene.position.z -= speed;
+        sceneAndCamera.camera.position.z += speed;
         break;
     }
-    return scene;
+    return sceneAndCamera;
   };
 }
