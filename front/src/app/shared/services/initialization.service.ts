@@ -73,7 +73,11 @@ export class InitializationService {
   configControls = (canvas, camera) => {
     const controls = new OrbitControls(camera, canvas);
     controls.enableZoom = true;
-    controls.update();
+    controls.minAzimuthAngle = -Math.PI/2;
+    controls.mouseButtons = {
+      RIGHT: THREE.MOUSE.ROTATE,
+      LEFT: THREE.MOUSE.PAN
+    }
     return controls;
   };
 }

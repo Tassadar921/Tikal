@@ -2,7 +2,6 @@ import {AfterViewInit, Component, ElementRef, Input, ViewChild} from '@angular/c
 import * as THREE from 'three';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
 import {DragControls} from 'three/examples/jsm/controls/DragControls';
-import {MovementsService} from '../shared/services/movements.service';
 import {InitializationService} from '../shared/services/initialization.service';
 
 @Component({
@@ -25,7 +24,6 @@ export class HomePage implements AfterViewInit {
   private matrix;
 
   constructor(
-    private movementsService: MovementsService,
     private initializationService: InitializationService
   ) {}
 
@@ -229,26 +227,6 @@ export class HomePage implements AfterViewInit {
           obj.visible = false;
         }
       }
-    });
-
-    //fires when any key is pressed
-    document.body.addEventListener('keydown', (e) => {
-
-      //pushing the key pressed in keyBuffer if key isn't in keyBuffer yet
-      if (!this.movementsService.keyBufferIncludes(keyBuffer, e.key.toLowerCase())) {
-        keyBuffer.push(e.key.toLowerCase());
-      }
-      //checking if shift is pressed
-      const shift = this.movementsService.keyBufferIncludes(keyBuffer, 'shift');
-
-      rtrn = this.movementsService.keyboardPressed(keyBuffer, shift, {scene: this.scene, camera: this.camera});
-      this.scene = rtrn.scene;
-      this.camera = rtrn.camera;
-    });
-    //fires when any key that was pressed becomes unpressed
-    document.body.addEventListener('keyup', (e) => {
-      //deleting the triggering key from keyBuffer
-      keyBuffer = this.movementsService.deleteFromKeyBuffer(keyBuffer, e.key.toLowerCase());
     });
 
     //fires each time pointer moves
