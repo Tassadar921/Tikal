@@ -236,8 +236,6 @@ export class HomePage implements AfterViewInit {
       this.pointer.y = -(e.clientY / this.renderer.domElement.height) * 2 + 1;
     });
 
-    console.log(this.matrix);
-
     setInterval(this.animate, 1000 / fps);
   }
 
