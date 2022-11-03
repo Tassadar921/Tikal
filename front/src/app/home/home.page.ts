@@ -61,13 +61,13 @@ export class HomePage implements AfterViewInit {
       for (let x = 0; x < col; x++) {
         if((y+1)%2) { //if index of line is even
           if ((x + 1) % 2) { //if index of col is even
-            rtrn = this.generateHexagon(x, y, draggableObjects, lines, col, radius, this.plane, false);
+            rtrn = this.generateHexagon(x, y, draggableObjects, lines, col, radius, this.plane, '', false);
             draggableObjects = rtrn.objects;
             this.plane = rtrn.plane;
           }
         }else{
           if (x % 2) { //if line and col both odd
-            rtrn = this.generateHexagon(x, y, draggableObjects, lines, col, radius, this.plane, false);
+            rtrn = this.generateHexagon(x, y, draggableObjects, lines, col, radius, this.plane, '', false);
             draggableObjects = rtrn.objects;
             this.plane = rtrn.plane;
           }
@@ -76,7 +76,7 @@ export class HomePage implements AfterViewInit {
     }
 
     //creating a draggable object for testing
-    rtrn = this.generateHexagon(5, -2, draggableObjects, lines, col, radius, this.plane, true);
+    rtrn = this.generateHexagon(5, -2, draggableObjects, lines, col, radius, this.plane, 'A', true);
     draggableObjects = rtrn.objects;
     this.plane = rtrn.plane;
 
@@ -207,7 +207,7 @@ export class HomePage implements AfterViewInit {
               if (draggableObjects[m] === e.object) {
                 draggableObjects.splice(m, 1);
                 //dev tool : initiates a new hexagon at the same place
-                rtrn = this.generateHexagon(5, -2, draggableObjects, lines, col, radius, this.plane, true);
+                rtrn = this.generateHexagon(5, -2, draggableObjects, lines, col, radius, this.plane,'A', true);
                 draggableObjects = rtrn.objects;
                 this.plane = rtrn.plane;
                 m = draggableObjects.length;
@@ -238,14 +238,14 @@ export class HomePage implements AfterViewInit {
     setInterval(this.animate, 1000 / fps);
   }
 
-  generateHexagon = (x, y, objects, lines, col, radius, plane, draggable = true) => {
+  generateHexagon = (x, y, objects, lines, col, radius, plane, letter, draggable = true) => {
 
     //calculating graphic xy of cylinder from matrix's xy
     const cylinderX = x * (radius * Math.cos(2 * Math.PI) + 2*radius);
     const cylinderY = -y*radius*Math.cos(Math.PI/6);
 
     //creating shape of regular cylinder of 6 segments => hexagon in 3D
-    const geometry = new THREE.CylinderGeometry(radius, radius, radius / 3, 6);
+    const geometry = new THREE.CylinderGeometry(radius, radius, radius / 5, 6);
 
     //id linked with sides to add textures to cylinder
     //i=0: sides
@@ -260,7 +260,7 @@ export class HomePage implements AfterViewInit {
     } else { //we add textures
       materials.push(new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/dirt.png')}));
       materials.push(new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/herbe.png')}));
-      materials.push(new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/test.png')}));
+      materials.push(new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/back'+letter+'.png')}));
     }
 
     //creating 3D object
@@ -268,7 +268,7 @@ export class HomePage implements AfterViewInit {
 
     //rotating object in XY-plane
     cylinder.rotateX(Math.PI / 2);
-    cylinder.rotateY(Math.PI / 2);
+    cylinder.rotateY(-Math.PI/2);
 
     //updating xy of 3D object from cylinderX and cylinderY
     cylinder.position.x = cylinderX / 2 - Math.floor(col / 2) * (radius + radius * Math.sin(Math.PI / 6)) + radius * Math.sin(Math.PI / 6);
@@ -286,7 +286,7 @@ export class HomePage implements AfterViewInit {
         cylinder.visible = true;
         cylinder.material[0] = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/dirt.png')});
         cylinder.material[1] = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/herbe.png')});
-        cylinder.material[2] = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/test.png')});
+        cylinder.material[2] = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/back.png')});
       }else{
         cylinder.visible = false;
       }

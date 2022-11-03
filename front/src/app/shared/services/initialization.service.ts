@@ -25,8 +25,11 @@ export class InitializationService {
       col * (radius + radius * Math.sin(Math.PI / 6)) + radius * Math.sin(Math.PI / 6) + 1000,
       (lines + 1) * radius * Math.cos(Math.PI / 6) + 1000
     );
-    const planeMaterial = new THREE.MeshBasicMaterial({opacity: 0, transparent: true});
-    return new THREE.Mesh(geometry, planeMaterial);
+    // const planeMaterial = new THREE.MeshBasicMaterial({opacity: 0, transparent: true});
+    const planeMaterial = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/herbe.png'), side: THREE.DoubleSide});
+    const plane = new THREE.Mesh(geometry, planeMaterial);
+    plane.position.setZ(-10);
+    return plane
   };
 
   //creates scene, adding plane and returning it
