@@ -39,7 +39,7 @@ export class InitializationService {
 
   //created matrix of line*col, returning it
   initMatrix = (line, col) => {
-    const matrix = []
+    const matrix = [];
     for (let l = 0; l < line; l++) {
       matrix.push([]);
       for (let c = 0; c < col; c++) {
@@ -62,11 +62,11 @@ export class InitializationService {
   //created renderer as a WebGLRenderer and returning it
   configRenderer = (canvas) => {
     const renderer = new THREE.WebGLRenderer({
-      canvas: canvas,
+      canvas,
       alpha: true,
     });
     renderer.setSize(window.innerWidth, window.innerWidth / 2);
-    return renderer
+    return renderer;
   };
 
   //created an OrbitControls object and returning it
@@ -75,9 +75,11 @@ export class InitializationService {
     controls.enableZoom = true;
     controls.minAzimuthAngle = -Math.PI/2;
     controls.mouseButtons = {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       RIGHT: THREE.MOUSE.ROTATE,
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       LEFT: THREE.MOUSE.PAN
-    }
+    };
     return controls;
   };
 }
