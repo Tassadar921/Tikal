@@ -22,14 +22,15 @@ export class InitializationService {
   //creates the XY plane, returning a 3D object
   configPlane = (lines, col, radius) => {
     const geometry = new THREE.PlaneGeometry(
-      col * (radius + radius * Math.sin(Math.PI / 6)) + radius * Math.sin(Math.PI / 6) + 1000,
-      (lines + 1) * radius * Math.cos(Math.PI / 6) + 1000
+      col * (radius + radius * Math.sin(Math.PI / 6)) + radius * Math.sin(Math.PI / 6),
+      (lines + 1) * radius * Math.cos(Math.PI / 6)
     );
     // const planeMaterial = new THREE.MeshBasicMaterial({opacity: 0, transparent: true});
-    const planeMaterial = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/herbe.png'), side: THREE.DoubleSide});
+    const planeMaterial = new THREE.MeshBasicMaterial({color: new THREE.Color(1,1,1), side: THREE.DoubleSide});
+    // const planeMaterial = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/herbe.png'), side: THREE.DoubleSide});
     const plane = new THREE.Mesh(geometry, planeMaterial);
-    plane.position.setZ(-10);
-    return plane
+    plane.translateOnAxis(new THREE.Vector3(0,0,1), -10);
+    return plane;
   };
 
   //creates scene, adding plane and returning it
