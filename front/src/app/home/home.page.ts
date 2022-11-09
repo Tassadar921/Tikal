@@ -2,6 +2,7 @@ import {AfterViewInit, Component, ElementRef, Input, ViewChild} from '@angular/c
 import * as THREE from 'three';
 import {DragControls} from 'three/examples/jsm/controls/DragControls';
 import {InitializationService} from '../shared/services/initialization.service';
+import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader';
 
 @Component({
   selector: 'app-home',
@@ -19,11 +20,12 @@ export class HomePage implements AfterViewInit {
   private controls;
   private plane;
   private raycaster = new THREE.Raycaster();
+  private modelLoader = new GLTFLoader();
   private pointer = new THREE.Vector2();
   private matrix;
 
   constructor(
-    private initializationService: InitializationService
+    private initializationService: InitializationService,
   ) {}
 
   ngAfterViewInit() {
@@ -100,7 +102,7 @@ export class HomePage implements AfterViewInit {
 
       //display of droppable grid
       for (const object of this.plane.children) {
-        if (object.children.length && object.geometry.type === 'CylinderGeometry') {
+        if (object.userData && !object.userData.draggable) {
           object.visible = true;
         }
       }
@@ -160,13 +162,16 @@ export class HomePage implements AfterViewInit {
       //saves id data of the object we're looking for just after
       let id = 0;
 
-      //looking in intersects for a CylinderGeometry object with at least a children => corresponds to hexagons of placement grid
+      //looking in intersects for an object with userData.draggable=false => corresponds to hexagons of placement grid
       //placed hexagons have no longer children
       //saving its property id in id
       for(let i=0; i<intersects.length; i++){
-        if(Object(intersects[i]).object.geometry.type === 'CylinderGeometry' && Object(intersects[i]).object.children.length){
+        if(Object(intersects[i]).object.userData && !Object(intersects[i]).object.userData.draggable){
           id=Object(intersects[i]).object.id;
           i=intersects.length;
+
+          console.log('x: ', this.plane.getObjectById(id).userData.x);
+          console.log('y: ', this.plane.getObjectById(id).userData.y);
 
           //saving the object we're looking for
           const object = this.matrix[this.plane.getObjectById(id).userData.x]
@@ -176,7 +181,7 @@ export class HomePage implements AfterViewInit {
           for(const x0 of [object.userData.x-1,object.userData.x+1]){
             for(const y0 of [object.userData.y-1,object.userData.y+1]){
               if(x0 > -1 && x0 < this.matrix.length && y0 > -1 && y0 < this.matrix[0].length) { //if index isn't valid, skip
-                if (!this.matrix[x0][y0].children.length) { //toggle validPlacement if a piece is placed on neighbors
+                if (this.matrix[x0][y0].userData.piecePlaced) { //toggle validPlacement if a piece is placed on neighbors
                   validPlacement = true;
                 }
               }
@@ -186,7 +191,7 @@ export class HomePage implements AfterViewInit {
           //idem here with pieces above and under, checking if one isn't empty
           for(const x0 of [object.userData.x-2,object.userData.x,object.userData.x+2]){
             if( x0 > -1 && x0 < this.matrix.length) { //if index isn't valid, skip
-              if (!this.matrix[x0][object.userData.y].children.length) { //toggle validPlacement if a piece is placed on neighbors
+              if (this.matrix[x0][object.userData.y].userData.piecePlaced) { //toggle validPlacement if a piece is placed on neighbors
                 validPlacement = true;
               }
             }
@@ -196,7 +201,8 @@ export class HomePage implements AfterViewInit {
             //children borders become useless, we delete it
             //next we set our dropped hexagon's sprites, copying dragged hexagon
             //then copying its rotation
-            object.children = [];
+            object.userData.piecePlaced = true;
+            object.children = e.object.children;
             object.material = e.object.material;
             object.rotation.x = e.object.rotation.x;
             object.rotation.y = e.object.rotation.y;
@@ -281,7 +287,15 @@ export class HomePage implements AfterViewInit {
 
       cylinder.add(edgeWireframe);
 
+      cylinder.userData = {
+        piecePlaced:false,
+        draggable:false,
+        x:y,
+        y:x
+      };
+
       if (x === 0 && y === 0) {//starting hexagon, special texture and visible
+        cylinder.userData.piecePlaced = true;
         cylinder.children = [];
         cylinder.visible = true;
         cylinder.material[0] = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/dirt.png')});
@@ -292,11 +306,21 @@ export class HomePage implements AfterViewInit {
       }
       //x and y on graphics and in matrix are inverted
       //saving xy coo of object which is in the matrix in object
-      cylinder.userData = {x:y, y:x};
 
       //it becomes a pointer : updating in the matrix will update on graphics
       this.matrix[y][x] = cylinder;
     } else {//if draggable => pushing in objects
+      cylinder.userData = {
+        draggable:true
+      };
+      this.modelLoader.load('./assets/arbre.gltf', (gltf) => {
+        // gltf.scene.rotateX(Math.PI/2);
+        gltf.scene.position.setX(cylinder.position.x);
+        gltf.scene.position.setZ(cylinder.position.z);
+        gltf.scene.position.setY(0);
+        console.log(gltf.scene.position);
+        cylinder.add(gltf.scene);
+      });
       objects.push(cylinder);
     }
 

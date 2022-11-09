@@ -22,8 +22,8 @@ export class InitializationService {
   //creates the XY plane, returning a 3D object
   configPlane = (lines, col, radius) => {
     const geometry = new THREE.PlaneGeometry(
-      col * (radius + radius * Math.sin(Math.PI / 6)) + radius * Math.sin(Math.PI / 6),
-      (lines + 1) * radius * Math.cos(Math.PI / 6)
+      col * (radius + radius * Math.sin(Math.PI / 6)) + radius * Math.sin(Math.PI / 6) + 1000,
+      (lines + 1) * radius * Math.cos(Math.PI / 6) + 1000
     );
     // const planeMaterial = new THREE.MeshBasicMaterial({opacity: 0, transparent: true});
     const planeMaterial = new THREE.MeshBasicMaterial({color: new THREE.Color(1,1,1), side: THREE.DoubleSide});
