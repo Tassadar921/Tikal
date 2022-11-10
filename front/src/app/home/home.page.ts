@@ -2,7 +2,7 @@ import {AfterViewInit, Component, ElementRef, Input, ViewChild} from '@angular/c
 import * as THREE from 'three';
 import {DragControls} from 'three/examples/jsm/controls/DragControls';
 import {InitializationService} from '../shared/services/initialization.service';
-import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader';
+import {GenerateHexagonService} from '../shared/services/generate-hexagon.service';
 
 @Component({
   selector: 'app-home',
@@ -20,12 +20,13 @@ export class HomePage implements AfterViewInit {
   private controls;
   private plane;
   private raycaster = new THREE.Raycaster();
-  private modelLoader = new GLTFLoader();
   private pointer = new THREE.Vector2();
   private matrix;
+  private draggableObjects = [];
 
   constructor(
     private initializationService: InitializationService,
+    private generateHexagonService: GenerateHexagonService
   ) {}
 
   ngAfterViewInit() {
@@ -42,11 +43,7 @@ export class HomePage implements AfterViewInit {
     this.controls = this.initializationService.configControls(this.canvas, this.camera);
     this.matrix = this.initializationService.initMatrix(lines, col);
 
-    //contains each dragable element
-    let draggableObjects = [];
-
-    //buffer of keys beeing pressed at the same time
-    let keyBuffer = [];
+    this.scene.add(this.initializationService.configLight());
 
     //used to receive js objects returned by functions
     let rtrn;
@@ -63,30 +60,28 @@ export class HomePage implements AfterViewInit {
       for (let x = 0; x < col; x++) {
         if((y+1)%2) { //if index of line is even
           if ((x + 1) % 2) { //if index of col is even
-            rtrn = this.generateHexagon(x, y, draggableObjects, lines, col, radius, this.plane, '', false);
-            draggableObjects = rtrn.objects;
-            this.plane = rtrn.plane;
+            this.generateHexagon(x, y, this.matrix, this.draggableObjects, lines, col, radius, this.plane, '', false);
           }
         }else{
           if (x % 2) { //if line and col both odd
-            rtrn = this.generateHexagon(x, y, draggableObjects, lines, col, radius, this.plane, '', false);
-            draggableObjects = rtrn.objects;
-            this.plane = rtrn.plane;
+            this.generateHexagon(x, y, this.matrix, this.draggableObjects, lines, col, radius, this.plane, '', false);
           }
         }
       }
     }
 
     //creating a draggable object for testing
-    rtrn = this.generateHexagon(5, -2, draggableObjects, lines, col, radius, this.plane, 'A', true);
-    draggableObjects = rtrn.objects;
-    this.plane = rtrn.plane;
+    this.generateHexagon(5, -2, this.matrix, this.draggableObjects, lines, col, radius, this.plane, 'A', true);
+
+    // rtrn = this.generateHexagonService.generateHexagon(7, -2, draggableObjects, lines, col, radius, this.plane, 'A', true);
+    // draggableObjects = rtrn.objects;
+    // this.plane = rtrn.plane;
 
     //save xy in case of non-droppable place in which object is dropped
     const coo = {x: 0, y: 0};
-
-    //makes all items in objects draggable in domElement
-    const dragable = new DragControls(draggableObjects, this.camera, this.renderer.domElement);
+    
+    const dragable = new DragControls(this.draggableObjects, this.camera, this.renderer.domElement);
+    this.draggableObjects[0]=this.generateHexagonService.addTree(this.draggableObjects[0]);
 
     //fires when dragging starts
     dragable.addEventListener('dragstart', (e) => {
@@ -166,13 +161,10 @@ export class HomePage implements AfterViewInit {
       //placed hexagons have no longer children
       //saving its property id in id
       for(let i=0; i<intersects.length; i++){
-        if(Object(intersects[i]).object.userData && !Object(intersects[i]).object.userData.draggable){
+        if(Object(intersects[i]).object.userData && !Object(intersects[i]).object.userData.draggable
+          && Object(intersects[i]).object.geometry.type==='CylinderGeometry'){
           id=Object(intersects[i]).object.id;
           i=intersects.length;
-
-          console.log('x: ', this.plane.getObjectById(id).userData.x);
-          console.log('y: ', this.plane.getObjectById(id).userData.y);
-
           //saving the object we're looking for
           const object = this.matrix[this.plane.getObjectById(id).userData.x]
             [this.plane.getObjectById(id).userData.y];
@@ -199,7 +191,7 @@ export class HomePage implements AfterViewInit {
           //if a placed neighbor piece on the board if present
           if(validPlacement) {
             //children borders become useless, we delete it
-            //next we set our dropped hexagon's sprites, copying dragged hexagon
+            //next we set our dropped hexagon's sprites, copying dragged hexagon's ones
             //then copying its rotation
             object.userData.piecePlaced = true;
             object.children = e.object.children;
@@ -209,14 +201,12 @@ export class HomePage implements AfterViewInit {
             object.rotation.z = e.object.rotation.z;
             //finally deleting the dragged object from draggableObjects and from the plane
             this.plane.remove(e.object);
-            for (let m = 0; m < draggableObjects.length; m++) {
-              if (draggableObjects[m] === e.object) {
-                draggableObjects.splice(m, 1);
+            for (let m = 0; m < this.draggableObjects.length; m++) {
+              if (this.draggableObjects[m] === e.object) {
+                this.draggableObjects.splice(m, 1);
                 //dev tool : initiates a new hexagon at the same place
-                rtrn = this.generateHexagon(5, -2, draggableObjects, lines, col, radius, this.plane,'A', true);
-                draggableObjects = rtrn.objects;
-                this.plane = rtrn.plane;
-                m = draggableObjects.length;
+                this.generateHexagon(5, -2, this.matrix, this.draggableObjects, lines, col, radius, this.plane,'A', true);
+                m = this.draggableObjects.length;
               }
             }
           }
@@ -228,7 +218,7 @@ export class HomePage implements AfterViewInit {
       }
 
       for (const obj of this.plane.children) { //hide placement grid
-        if (obj.children.length && obj.geometry.type === 'CylinderGeometry') {
+        if (!obj.userData.draggable && obj.geometry.type === 'CylinderGeometry' && !obj.userData.piecePlaced) {
           obj.visible = false;
         }
       }
@@ -244,90 +234,11 @@ export class HomePage implements AfterViewInit {
     setInterval(this.animate, 1000 / fps);
   }
 
-  generateHexagon = (x, y, objects, lines, col, radius, plane, letter, draggable = true) => {
-
-    //calculating graphic xy of cylinder from matrix's xy
-    const cylinderX = x * (radius * Math.cos(2 * Math.PI) + 2*radius);
-    const cylinderY = -y*radius*Math.cos(Math.PI/6);
-
-    //creating shape of regular cylinder of 6 segments => hexagon in 3D
-    const geometry = new THREE.CylinderGeometry(radius, radius, radius / 5, 6);
-
-    //id linked with sides to add textures to cylinder
-    //i=0: sides
-    //i=1: top
-    //i=2: bottom
-    const materials = [];
-
-    if (!draggable) { //transparent hexagon
-      materials.push(new THREE.MeshBasicMaterial({transparent: true, opacity: 0}));
-      materials.push(new THREE.MeshBasicMaterial({transparent: true, opacity: 0}));
-      materials.push(new THREE.MeshBasicMaterial({transparent: true, opacity: 0}));
-    } else { //we add textures
-      materials.push(new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/dirt.png')}));
-      materials.push(new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/herbe.png')}));
-      materials.push(new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/back'+letter+'.png')}));
-    }
-
-    //creating 3D object
-    const cylinder = new THREE.Mesh(geometry, materials);
-
-    //rotating object in XY-plane
-    cylinder.rotateX(Math.PI / 2);
-    cylinder.rotateY(-Math.PI/2);
-
-    //updating xy of 3D object from cylinderX and cylinderY
-    cylinder.position.x = cylinderX / 2 - Math.floor(col / 2) * (radius + radius * Math.sin(Math.PI / 6)) + radius * Math.sin(Math.PI / 6);
-    cylinder.position.y = cylinderY + lines * radius * Math.cos(Math.PI / 6) / Math.PI;
-
-    if (!draggable) {//adding visible edges
-      const edgeGeometry = new THREE.EdgesGeometry(geometry);
-      const edgeMaterial = new THREE.LineBasicMaterial({color: 'lightGreen'});
-      const edgeWireframe = new THREE.LineSegments(edgeGeometry, edgeMaterial);
-
-      cylinder.add(edgeWireframe);
-
-      cylinder.userData = {
-        piecePlaced:false,
-        draggable:false,
-        x:y,
-        y:x
-      };
-
-      if (x === 0 && y === 0) {//starting hexagon, special texture and visible
-        cylinder.userData.piecePlaced = true;
-        cylinder.children = [];
-        cylinder.visible = true;
-        cylinder.material[0] = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/dirt.png')});
-        cylinder.material[1] = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/herbe.png')});
-        cylinder.material[2] = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/back.png')});
-      }else{
-        cylinder.visible = false;
-      }
-      //x and y on graphics and in matrix are inverted
-      //saving xy coo of object which is in the matrix in object
-
-      //it becomes a pointer : updating in the matrix will update on graphics
-      this.matrix[y][x] = cylinder;
-    } else {//if draggable => pushing in objects
-      cylinder.userData = {
-        draggable:true
-      };
-      this.modelLoader.load('./assets/arbre.gltf', (gltf) => {
-        // gltf.scene.rotateX(Math.PI/2);
-        gltf.scene.position.setX(cylinder.position.x);
-        gltf.scene.position.setZ(cylinder.position.z);
-        gltf.scene.position.setY(0);
-        console.log(gltf.scene.position);
-        cylinder.add(gltf.scene);
-      });
-      objects.push(cylinder);
-    }
-
-    //cylinder belongs to plane
-    plane.add(cylinder);
-
-    return {objects, plane};
+  generateHexagon = (x, y, matrix, draggableObjects, lines, col, radius, plane, letter, draggable) => {
+    const rtrn = this.generateHexagonService.generateHexagon(x, y, matrix, draggableObjects, lines, col, radius, plane, letter, draggable);
+    this.draggableObjects = rtrn.objects;
+    this.plane = rtrn.plane;
+    this.matrix = rtrn.matrix;
   };
 
   animate = () => { //loop allowing graphics to be updated
