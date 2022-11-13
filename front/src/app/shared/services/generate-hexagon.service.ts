@@ -9,9 +9,9 @@ export class GenerateHexagonService {
 
   private modelLoader = new GLTFLoader();
 
-  constructor() { }
+  constructor() {}
 
-  generateHexagon = (x, y, matrix, objects, lines, col, radius, plane, letter, draggable = true) => {
+  generateHexagon = (x, y, matrix, draggableObjects, lines, col, radius, plane, letter, draggable = true) => {
     //calculating graphic xy of cylinder from matrix's xy
     const cylinderX = x * (radius * Math.cos(2 * Math.PI) + 2*radius);
     const cylinderY = -y*radius*Math.cos(Math.PI/6);
@@ -81,21 +81,23 @@ export class GenerateHexagonService {
         draggable:true
       };
       cylinder.visible = true;
-      objects = [cylinder];
+      draggableObjects = [cylinder];
       plane.add(cylinder);
     }
 
-    return {objects, plane, matrix};
+    return {draggableObjects, plane, matrix, cylinder};
 
   };
 
-  addTree = (object) => {
+  addTree = (tile, position, scene) => {
     this.modelLoader.load('./assets/arbre.gltf', (gltf) => {
-      gltf.scene.position.setX(object.position.x);
-      gltf.scene.position.setZ(object.position.z);
-      gltf.scene.position.setY(0);
-      object.add(gltf.scene);
+      gltf.scene.position.setX(tile.x);
+      gltf.scene.position.setY(tile.y);
+      gltf.scene.position.setZ(tile.z);
+      gltf.scene.rotateX(Math.PI/2);
+      tile.children.push(gltf.scene);
+      scene.add(gltf.scene);
     });
-    return object;
+    return {tile, scene};
   };
 }

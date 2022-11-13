@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import {Injectable} from '@angular/core';
 import * as THREE from 'three';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
 
@@ -7,7 +7,8 @@ import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
 })
 export class InitializationService {
 
-  constructor() { }
+  constructor() {
+  }
 
   //calculates graphic scale from canvas width and height, better graphic render, returning a proportion
   calculateAspectRatio = (canvas) => {
@@ -29,7 +30,7 @@ export class InitializationService {
     // const planeMaterial = new THREE.MeshBasicMaterial({color: new THREE.Color(1,1,1), side: THREE.DoubleSide});
     // const planeMaterial = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/herbe.png'), side: THREE.DoubleSide});
     const plane = new THREE.Mesh(geometry, planeMaterial);
-    plane.translateOnAxis(new THREE.Vector3(0,0,1), -10);
+    plane.translateOnAxis(new THREE.Vector3(0, 0, 1), -10);
     return plane;
   };
 
@@ -77,7 +78,7 @@ export class InitializationService {
   configControls = (canvas, camera) => {
     const controls = new OrbitControls(camera, canvas);
     controls.enableZoom = true;
-    controls.minAzimuthAngle = -Math.PI/2;
+    controls.minAzimuthAngle = -Math.PI / 2;
     controls.mouseButtons = {
       // eslint-disable-next-line @typescript-eslint/naming-convention
       RIGHT: THREE.MOUSE.ROTATE,
@@ -88,8 +89,8 @@ export class InitializationService {
   };
 
   configLight = () => {
-    const light = new THREE.PointLight( 0xFFFFFF, 30, 0 );
-    light.position.set( 0, 0, 10 );
-    return(light);
+    const light = new THREE.PointLight(0xFFFFFF, 30, 0);
+    light.position.set(0, 0, 10);
+    return (light);
   };
 }

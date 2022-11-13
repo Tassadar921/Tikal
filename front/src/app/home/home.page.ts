@@ -3,6 +3,8 @@ import * as THREE from 'three';
 import {DragControls} from 'three/examples/jsm/controls/DragControls';
 import {InitializationService} from '../shared/services/initialization.service';
 import {GenerateHexagonService} from '../shared/services/generate-hexagon.service';
+import {Vector3} from 'three';
+import {DraggableTile} from '../shared/classes/draggableTile';
 
 @Component({
   selector: 'app-home',
@@ -23,6 +25,8 @@ export class HomePage implements AfterViewInit {
   private pointer = new THREE.Vector2();
   private matrix;
   private draggableObjects = [];
+  private dragControls;
+  private draggableTile;
 
   constructor(
     private initializationService: InitializationService,
@@ -45,8 +49,8 @@ export class HomePage implements AfterViewInit {
 
     this.scene.add(this.initializationService.configLight());
 
-    //used to receive js objects returned by functions
-    let rtrn;
+    //save xy in case of non-droppable place in which object is dropped
+    let cooBeforeDrag = {x: 0, y: 0, z: 0};
 
     //gen of matrix, like
 
@@ -60,40 +64,58 @@ export class HomePage implements AfterViewInit {
       for (let x = 0; x < col; x++) {
         if((y+1)%2) { //if index of line is even
           if ((x + 1) % 2) { //if index of col is even
-            this.generateHexagon(x, y, this.matrix, this.draggableObjects, lines, col, radius, this.plane, '', false);
+            this.generateHexagon(x, y, this.matrix, this.draggableObjects, lines, col, radius, this.plane, '', cooBeforeDrag, false);
           }
         }else{
           if (x % 2) { //if line and col both odd
-            this.generateHexagon(x, y, this.matrix, this.draggableObjects, lines, col, radius, this.plane, '', false);
+            this.generateHexagon(x, y, this.matrix, this.draggableObjects, lines, col, radius, this.plane, '', cooBeforeDrag, false);
           }
         }
       }
     }
 
     //creating a draggable object for testing
-    this.generateHexagon(5, -2, this.matrix, this.draggableObjects, lines, col, radius, this.plane, 'A', true);
+    this.generateHexagon(5, -2, this.matrix, this.draggableObjects, lines, col, radius, this.plane, 'A', cooBeforeDrag, true);
+    console.log(this.scene);
+    //fires each time pointer moves
+    this.renderer.domElement.addEventListener('pointermove', (e) => {
+      //normalized coo of pointer
+      this.pointer.x = (e.clientX / this.renderer.domElement.width) * 2 - 1;
+      this.pointer.y = -(e.clientY / this.renderer.domElement.height) * 2 + 1;
+    });
 
-    // rtrn = this.generateHexagonService.generateHexagon(7, -2, draggableObjects, lines, col, radius, this.plane, 'A', true);
-    // draggableObjects = rtrn.objects;
-    // this.plane = rtrn.plane;
+    setInterval(this.animate, 1000 / fps);
+  }
 
-    //save xy in case of non-droppable place in which object is dropped
-    const coo = {x: 0, y: 0};
-    
-    const dragable = new DragControls(this.draggableObjects, this.camera, this.renderer.domElement);
-    this.draggableObjects[0]=this.generateHexagonService.addTree(this.draggableObjects[0]);
+  generateHexagon = (x, y, matrix, draggableObjects, lines, col, radius, plane, letter, cooBeforeDrag, draggable) => {
+    const hexagonRtrn = this.generateHexagonService.generateHexagon(x, y, matrix, draggableObjects, lines, col, radius, plane, letter, draggable);
+    this.draggableObjects = hexagonRtrn.draggableObjects;
+    this.plane = hexagonRtrn.plane;
+    this.matrix = hexagonRtrn.matrix;
+    if(draggable) {
+      this.dragControls = new DragControls(this.draggableObjects, this.camera, this.renderer.domElement);
+      this.setDraggableEvents(lines, col, radius, cooBeforeDrag);
+      this.draggableTile = new DraggableTile(hexagonRtrn.cylinder);
+      const treeRtrn = this.generateHexagonService.addTree(this.draggableTile, '', this.scene);
+      this.scene = treeRtrn.scene;
+      this.draggableTile = treeRtrn.tile;
+    }
+  };
 
+  setDraggableEvents = (lines, col, radius, cooBeforeDrag) => {
     //fires when dragging starts
-    dragable.addEventListener('dragstart', (e) => {
+    this.dragControls.addEventListener('dragstart', (e) => {
       //disable OrbitControls, if we don't it's total chaos
       this.controls.enabled = false;
+
+      console.log(this.scene.children);
 
       //making the piece beeing above the board
       e.object.position.z = radius/2;
 
       //saving xy of dragged object to move it back if invalid drop placement
-      coo.x = e.object.position.x;
-      coo.y = e.object.position.y;
+      cooBeforeDrag.x = e.object.position.x;
+      cooBeforeDrag.y = e.object.position.y;
 
       //display of droppable grid
       for (const object of this.plane.children) {
@@ -110,10 +132,17 @@ export class HomePage implements AfterViewInit {
       });
     });
     //fires each time dragging object moves
-    dragable.addEventListener('drag', (e) => {
+    this.dragControls.addEventListener('drag', (e) => {
 
       //making the piece beeing above the board
       e.object.position.z = radius/2;
+
+      const difference = new Vector3();
+      difference.x = e.object.position.x-cooBeforeDrag.x;
+      difference.y = e.object.position.y-cooBeforeDrag.y;
+
+      this.draggableTile.dragUpdateChildren(cooBeforeDrag, difference);
+      console.log(this.scene.children);
 
       //casts an infinite line between the pointer and the camera
       this.raycaster.setFromCamera(this.pointer, this.camera);
@@ -131,7 +160,7 @@ export class HomePage implements AfterViewInit {
       }
     });
     //fires when dragging ends
-    dragable.addEventListener('dragend', (e) => {
+    this.dragControls.addEventListener('dragend', (e) => {
       //re-enable OrbitControls
       this.controls.enabled = true;
 
@@ -166,8 +195,7 @@ export class HomePage implements AfterViewInit {
           id=Object(intersects[i]).object.id;
           i=intersects.length;
           //saving the object we're looking for
-          const object = this.matrix[this.plane.getObjectById(id).userData.x]
-            [this.plane.getObjectById(id).userData.y];
+          const object = this.matrix[this.plane.getObjectById(id).userData.x][this.plane.getObjectById(id).userData.y];
 
           //check the 4 hexagons on the sides to see if they contain a piece or if empty
           for(const x0 of [object.userData.x-1,object.userData.x+1]){
@@ -204,17 +232,18 @@ export class HomePage implements AfterViewInit {
             for (let m = 0; m < this.draggableObjects.length; m++) {
               if (this.draggableObjects[m] === e.object) {
                 this.draggableObjects.splice(m, 1);
-                //dev tool : initiates a new hexagon at the same place
-                this.generateHexagon(5, -2, this.matrix, this.draggableObjects, lines, col, radius, this.plane,'A', true);
+                // this.draggable = new DragControls(this.draggableObjects, this.camera, this.renderer.domElement);
                 m = this.draggableObjects.length;
+                //dev tool : initiates a new hexagon at the same place
+                this.generateHexagon(5, -2, this.matrix, this.draggableObjects, lines, col, radius, this.plane, 'A', cooBeforeDrag, true);
               }
             }
           }
         }
       }
       if(!validPlacement) { //if droppable area isn't found, reinitialize coo of dragged object
-        e.object.position.x = coo.x;
-        e.object.position.y = coo.y;
+        e.object.position.x = cooBeforeDrag.x;
+        e.object.position.y = cooBeforeDrag.y;
       }
 
       for (const obj of this.plane.children) { //hide placement grid
@@ -223,23 +252,7 @@ export class HomePage implements AfterViewInit {
         }
       }
     });
-
-    //fires each time pointer moves
-    this.renderer.domElement.addEventListener('pointermove', (e) => {
-      //normalized coo of pointer
-      this.pointer.x = (e.clientX / this.renderer.domElement.width) * 2 - 1;
-      this.pointer.y = -(e.clientY / this.renderer.domElement.height) * 2 + 1;
-    });
-
-    setInterval(this.animate, 1000 / fps);
   }
-
-  generateHexagon = (x, y, matrix, draggableObjects, lines, col, radius, plane, letter, draggable) => {
-    const rtrn = this.generateHexagonService.generateHexagon(x, y, matrix, draggableObjects, lines, col, radius, plane, letter, draggable);
-    this.draggableObjects = rtrn.objects;
-    this.plane = rtrn.plane;
-    this.matrix = rtrn.matrix;
-  };
 
   animate = () => { //loop allowing graphics to be updated
     this.controls.update();
