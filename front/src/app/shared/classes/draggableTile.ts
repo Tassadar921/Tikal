@@ -14,11 +14,27 @@ export class DraggableTile {
     this.hexagon = hexagon;
   }
 
+  dragStartUpdateChildren = (z) => {
+    console.log('dragstart');
+    for(const child of this.children){
+      child.position.z = z;
+      child.userData = {cooBeforeDrag: child.position.clone()};
+    }
+  };
+
   dragUpdateChildren = (cooBeforeDrag, difference) => {
     for(const child of this.children){
-      child.position.x = cooBeforeDrag.x + difference.x;
-      child.position.y = cooBeforeDrag.y + difference.y;
-      child.position.z = cooBeforeDrag.z + difference.z;
+      console.log(child.userData.cooBeforeDrag);
+      child.position.x = child.userData.cooBeforeDrag.x + difference.x;
+      child.position.y = child.userData.cooBeforeDrag.y + difference.y;
+      child.position.z = child.userData.cooBeforeDrag.z + difference.z;
+    }
+  };
+
+  dragEnd = () => {
+    for(const child of this.children) {
+      child.position.z = 15;
+      child.userData = {};
     }
   };
 }

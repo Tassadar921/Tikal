@@ -50,7 +50,7 @@ export class HomePage implements AfterViewInit {
     this.scene.add(this.initializationService.configLight());
 
     //save xy in case of non-droppable place in which object is dropped
-    let cooBeforeDrag = {x: 0, y: 0, z: 0};
+    const cooBeforeDrag = {x: 0, y: 0, z: 0};
 
     //gen of matrix, like
 
@@ -76,7 +76,6 @@ export class HomePage implements AfterViewInit {
 
     //creating a draggable object for testing
     this.generateHexagon(5, -2, this.matrix, this.draggableObjects, lines, col, radius, this.plane, 'A', cooBeforeDrag, true);
-    console.log(this.scene);
     //fires each time pointer moves
     this.renderer.domElement.addEventListener('pointermove', (e) => {
       //normalized coo of pointer
@@ -88,7 +87,8 @@ export class HomePage implements AfterViewInit {
   }
 
   generateHexagon = (x, y, matrix, draggableObjects, lines, col, radius, plane, letter, cooBeforeDrag, draggable) => {
-    const hexagonRtrn = this.generateHexagonService.generateHexagon(x, y, matrix, draggableObjects, lines, col, radius, plane, letter, draggable);
+    const hexagonRtrn = this.generateHexagonService.generateHexagon(
+      x, y, matrix, draggableObjects, lines, col, radius, plane, letter, draggable);
     this.draggableObjects = hexagonRtrn.draggableObjects;
     this.plane = hexagonRtrn.plane;
     this.matrix = hexagonRtrn.matrix;
@@ -108,14 +108,14 @@ export class HomePage implements AfterViewInit {
       //disable OrbitControls, if we don't it's total chaos
       this.controls.enabled = false;
 
-      console.log(this.scene.children);
-
       //making the piece beeing above the board
       e.object.position.z = radius/2;
 
       //saving xy of dragged object to move it back if invalid drop placement
       cooBeforeDrag.x = e.object.position.x;
       cooBeforeDrag.y = e.object.position.y;
+
+      this.draggableTile.dragStartUpdateChildren(e.object.position.z);
 
       //display of droppable grid
       for (const object of this.plane.children) {
@@ -142,7 +142,6 @@ export class HomePage implements AfterViewInit {
       difference.y = e.object.position.y-cooBeforeDrag.y;
 
       this.draggableTile.dragUpdateChildren(cooBeforeDrag, difference);
-      console.log(this.scene.children);
 
       //casts an infinite line between the pointer and the camera
       this.raycaster.setFromCamera(this.pointer, this.camera);
@@ -229,6 +228,7 @@ export class HomePage implements AfterViewInit {
             object.rotation.z = e.object.rotation.z;
             //finally deleting the dragged object from draggableObjects and from the plane
             this.plane.remove(e.object);
+            console.log(this.scene.children);
             for (let m = 0; m < this.draggableObjects.length; m++) {
               if (this.draggableObjects[m] === e.object) {
                 this.draggableObjects.splice(m, 1);
@@ -244,6 +244,11 @@ export class HomePage implements AfterViewInit {
       if(!validPlacement) { //if droppable area isn't found, reinitialize coo of dragged object
         e.object.position.x = cooBeforeDrag.x;
         e.object.position.y = cooBeforeDrag.y;
+        const difference = new Vector3();
+        difference.x = e.object.position.x-cooBeforeDrag.x;
+        difference.y = e.object.position.y-cooBeforeDrag.y;
+
+        this.draggableTile.dragUpdateChildren(cooBeforeDrag, difference);
       }
 
       for (const obj of this.plane.children) { //hide placement grid
@@ -251,8 +256,9 @@ export class HomePage implements AfterViewInit {
           obj.visible = false;
         }
       }
+      this.draggableTile.dragEnd();
     });
-  }
+  };
 
   animate = () => { //loop allowing graphics to be updated
     this.controls.update();
