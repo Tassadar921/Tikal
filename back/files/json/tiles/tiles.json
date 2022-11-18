@@ -1,7 +1,154 @@
 [
   {
     "A": [
-
+      {
+        "id": "A0",
+        "type": "treasure",
+        "level": 4,
+        "directions":{
+          "north": 2,
+          "northEast": 0,
+          "southEast": 1,
+          "south": 0,
+          "southWest": 0,
+          "northWest": 0
+        }
+      },{
+        "id": "A1",
+        "type": "temple",
+        "level": 2,
+        "directions":{
+          "north": 2,
+          "northEast": 0,
+          "southEast": 0,
+          "south": 1,
+          "southWest": 0,
+          "northWest": 0
+        }
+      },{
+        "id": "A2",
+        "type": "treasure",
+        "level": 4,
+        "directions":{
+          "north": 2,
+          "northEast": 0,
+          "southEast": 0,
+          "south": 0,
+          "southWest": 1,
+          "northWest": 0
+        }
+      },{
+        "id": "A3",
+        "type": "temple",
+        "level": 1,
+        "directions":{
+          "north": 2,
+          "northEast": 1,
+          "southEast": 0,
+          "south": 0,
+          "southWest": 0,
+          "northWest": 0
+        }
+      },{
+        "id": "A4",
+        "type": "plain",
+        "level": 0,
+        "directions":{
+          "north": 0,
+          "northEast": 0,
+          "southEast": 1,
+          "south": 1,
+          "southWest": 0,
+          "northWest": 1
+        }
+      },{
+        "id": "A5",
+        "type": "temple",
+        "level": 2,
+        "directions":{
+          "north": 2,
+          "northEast": 0,
+          "southEast": 1,
+          "south": 0,
+          "southWest": 0,
+          "northWest": 0
+        }
+      }
+    ],
+    "B": [
+      {
+        "id": "B0",
+        "type": "plain",
+        "level": 0,
+        "directions":{
+          "north": 2,
+          "northEast": 0,
+          "southEast": 1,
+          "south": 0,
+          "southWest": 0,
+          "northWest": 0
+        }
+      },{
+        "id": "B1",
+        "type": "plain",
+        "level": 0,
+        "directions":{
+          "north": 2,
+          "northEast": 1,
+          "southEast": 0,
+          "south": 0,
+          "southWest": 0,
+          "northWest": 0
+        }
+      },{
+        "id": "B2",
+        "type": "treasure",
+        "level": 4,
+        "directions":{
+          "north": 1,
+          "northEast": 2,
+          "southEast": 0,
+          "south": 0,
+          "southWest": 0,
+          "northWest": 0
+        }
+      },{
+        "id": "B3",
+        "type": "volcano",
+        "level": 0,
+        "directions":{
+          "north": 0,
+          "northEast": 0,
+          "southEast": 0,
+          "south": 0,
+          "southWest": 0,
+          "northWest": 0
+        }
+      },{
+        "id": "B4",
+        "type": "temple",
+        "level": 3,
+        "directions":{
+          "north": 2,
+          "northEast": 0,
+          "southEast": 0,
+          "south": 1,
+          "southWest": 0,
+          "northWest": 0
+        }
+      },{
+        "id": "B5",
+        "type": "temple",
+        "level": 2,
+        "directions":{
+          "north": 1,
+          "northEast": 0,
+          "southEast": 2,
+          "south": 0,
+          "southWest": 0,
+          "northWest": 0
+        }
+      }
     ]
   }
 ]
