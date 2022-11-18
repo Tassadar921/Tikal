@@ -4,7 +4,6 @@ import {DragControls} from 'three/examples/jsm/controls/DragControls';
 import {InitializationService} from '../shared/services/initialization.service';
 import {GenerateHexagonService} from '../shared/services/generate-hexagon.service';
 import {Vector3} from 'three';
-import {DraggableTile} from '../shared/classes/draggableTile';
 
 @Component({
   selector: 'app-home',
@@ -31,7 +30,8 @@ export class HomePage implements AfterViewInit {
   constructor(
     private initializationService: InitializationService,
     private generateHexagonService: GenerateHexagonService
-  ) {}
+  ) {
+  }
 
   ngAfterViewInit() {
     //col and lines of the board, radius of hexagons
@@ -62,11 +62,11 @@ export class HomePage implements AfterViewInit {
     //thought to make operations easier on neightbours
     for (let y = 0; y < lines; y++) {
       for (let x = 0; x < col; x++) {
-        if((y+1)%2) { //if index of line is even
+        if ((y + 1) % 2) { //if index of line is even
           if ((x + 1) % 2) { //if index of col is even
             this.generateHexagon(x, y, this.matrix, this.draggableObjects, lines, col, radius, this.plane, '', cooBeforeDrag, false);
           }
-        }else{
+        } else {
           if (x % 2) { //if line and col both odd
             this.generateHexagon(x, y, this.matrix, this.draggableObjects, lines, col, radius, this.plane, '', cooBeforeDrag, false);
           }
@@ -92,13 +92,11 @@ export class HomePage implements AfterViewInit {
     this.draggableObjects = hexagonRtrn.draggableObjects;
     this.plane = hexagonRtrn.plane;
     this.matrix = hexagonRtrn.matrix;
-    if(draggable) {
+    if (draggable) {
       this.dragControls = new DragControls(this.draggableObjects, this.camera, this.renderer.domElement);
+      this.dragControls.transformGroup = true;
       this.setDraggableEvents(lines, col, radius, cooBeforeDrag);
-      this.draggableTile = new DraggableTile(hexagonRtrn.cylinder);
-      const treeRtrn = this.generateHexagonService.addTree(this.draggableTile, '', this.scene);
-      this.scene = treeRtrn.scene;
-      this.draggableTile = treeRtrn.tile;
+      this.draggableObjects[0] = this.generateHexagonService.addTree(hexagonRtrn.cylinder, '', this.scene);
     }
   };
 
@@ -109,13 +107,11 @@ export class HomePage implements AfterViewInit {
       this.controls.enabled = false;
 
       //making the piece beeing above the board
-      e.object.position.z = radius/2;
+      e.object.position.z = radius / 2;
 
       //saving xy of dragged object to move it back if invalid drop placement
       cooBeforeDrag.x = e.object.position.x;
       cooBeforeDrag.y = e.object.position.y;
-
-      this.draggableTile.dragStartUpdateChildren(e.object.position.z);
 
       //display of droppable grid
       for (const object of this.plane.children) {
@@ -134,14 +130,9 @@ export class HomePage implements AfterViewInit {
     //fires each time dragging object moves
     this.dragControls.addEventListener('drag', (e) => {
 
-      //making the piece beeing above the board
-      e.object.position.z = radius/2;
-
       const difference = new Vector3();
-      difference.x = e.object.position.x-cooBeforeDrag.x;
-      difference.y = e.object.position.y-cooBeforeDrag.y;
-
-      this.draggableTile.dragUpdateChildren(cooBeforeDrag, difference);
+      difference.x = e.object.position.x - cooBeforeDrag.x;
+      difference.y = e.object.position.y - cooBeforeDrag.y;
 
       //casts an infinite line between the pointer and the camera
       this.raycaster.setFromCamera(this.pointer, this.camera);
@@ -154,6 +145,7 @@ export class HomePage implements AfterViewInit {
         if (Object(intersects[i]).object.geometry.type === 'PlaneGeometry') {
           e.object.position.x = intersects[i].point.x - this.scene.position.x;
           e.object.position.y = intersects[i].point.y - this.scene.position.y;
+          e.object.position.z = radius / 2;
           i = intersects.length;
         }
       }
@@ -163,7 +155,7 @@ export class HomePage implements AfterViewInit {
       //re-enable OrbitControls
       this.controls.enabled = true;
 
-      //destroy of piece rotation on key press 'r'
+      //piece rotation on key press 'r'
       document.body.removeEventListener('keydown', (input) => {
         if (input.key.toLowerCase() === 'r') {
           e.object.rotateY(-Math.PI / 3);
@@ -188,18 +180,18 @@ export class HomePage implements AfterViewInit {
       //looking in intersects for an object with userData.draggable=false => corresponds to hexagons of placement grid
       //placed hexagons have no longer children
       //saving its property id in id
-      for(let i=0; i<intersects.length; i++){
-        if(Object(intersects[i]).object.userData && !Object(intersects[i]).object.userData.draggable
-          && Object(intersects[i]).object.geometry.type==='CylinderGeometry'){
-          id=Object(intersects[i]).object.id;
-          i=intersects.length;
+      for (let i = 0; i < intersects.length; i++) {
+        if (Object(intersects[i]).object.userData && !Object(intersects[i]).object.userData.draggable
+          && Object(intersects[i]).object.geometry.type === 'CylinderGeometry') {
+          id = Object(intersects[i]).object.id;
+          i = intersects.length;
           //saving the object we're looking for
           const object = this.matrix[this.plane.getObjectById(id).userData.x][this.plane.getObjectById(id).userData.y];
 
           //check the 4 hexagons on the sides to see if they contain a piece or if empty
-          for(const x0 of [object.userData.x-1,object.userData.x+1]){
-            for(const y0 of [object.userData.y-1,object.userData.y+1]){
-              if(x0 > -1 && x0 < this.matrix.length && y0 > -1 && y0 < this.matrix[0].length) { //if index isn't valid, skip
+          for (const x0 of [object.userData.x - 1, object.userData.x + 1]) {
+            for (const y0 of [object.userData.y - 1, object.userData.y + 1]) {
+              if (x0 > -1 && x0 < this.matrix.length && y0 > -1 && y0 < this.matrix[0].length) { //if index isn't valid, skip
                 if (this.matrix[x0][y0].userData.piecePlaced) { //toggle validPlacement if a piece is placed on neighbors
                   validPlacement = true;
                 }
@@ -208,15 +200,15 @@ export class HomePage implements AfterViewInit {
           }
 
           //idem here with pieces above and under, checking if one isn't empty
-          for(const x0 of [object.userData.x-2,object.userData.x,object.userData.x+2]){
-            if( x0 > -1 && x0 < this.matrix.length) { //if index isn't valid, skip
+          for (const x0 of [object.userData.x - 2, object.userData.x, object.userData.x + 2]) {
+            if (x0 > -1 && x0 < this.matrix.length) { //if index isn't valid, skip
               if (this.matrix[x0][object.userData.y].userData.piecePlaced) { //toggle validPlacement if a piece is placed on neighbors
                 validPlacement = true;
               }
             }
           }
           //if a placed neighbor piece on the board if present
-          if(validPlacement) {
+          if (validPlacement) {
             //children borders become useless, we delete it
             //next we set our dropped hexagon's sprites, copying dragged hexagon's ones
             //then copying its rotation
@@ -228,11 +220,9 @@ export class HomePage implements AfterViewInit {
             object.rotation.z = e.object.rotation.z;
             //finally deleting the dragged object from draggableObjects and from the plane
             this.plane.remove(e.object);
-            console.log(this.scene.children);
             for (let m = 0; m < this.draggableObjects.length; m++) {
               if (this.draggableObjects[m] === e.object) {
                 this.draggableObjects.splice(m, 1);
-                // this.draggable = new DragControls(this.draggableObjects, this.camera, this.renderer.domElement);
                 m = this.draggableObjects.length;
                 //dev tool : initiates a new hexagon at the same place
                 this.generateHexagon(5, -2, this.matrix, this.draggableObjects, lines, col, radius, this.plane, 'A', cooBeforeDrag, true);
@@ -241,14 +231,9 @@ export class HomePage implements AfterViewInit {
           }
         }
       }
-      if(!validPlacement) { //if droppable area isn't found, reinitialize coo of dragged object
+      if (!validPlacement) { //if droppable area isn't found, reinitialize coo of dragged object
         e.object.position.x = cooBeforeDrag.x;
         e.object.position.y = cooBeforeDrag.y;
-        const difference = new Vector3();
-        difference.x = e.object.position.x-cooBeforeDrag.x;
-        difference.y = e.object.position.y-cooBeforeDrag.y;
-
-        this.draggableTile.dragUpdateChildren(cooBeforeDrag, difference);
       }
 
       for (const obj of this.plane.children) { //hide placement grid
@@ -256,7 +241,6 @@ export class HomePage implements AfterViewInit {
           obj.visible = false;
         }
       }
-      this.draggableTile.dragEnd();
     });
   };
 
