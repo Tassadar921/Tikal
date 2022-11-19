@@ -218,6 +218,9 @@ export class HomePage implements AfterViewInit {
             object.rotation.x = e.object.rotation.x;
             object.rotation.y = e.object.rotation.y;
             object.rotation.z = e.object.rotation.z;
+            for(const child of object.children) {
+              child.position.y-=radius/2;
+            }
             //finally deleting the dragged object from draggableObjects and from the plane
             this.plane.remove(e.object);
             for (let m = 0; m < this.draggableObjects.length; m++) {
