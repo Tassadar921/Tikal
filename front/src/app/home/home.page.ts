@@ -25,7 +25,6 @@ export class HomePage implements AfterViewInit {
   private matrix;
   private draggableObjects = [];
   private dragControls;
-  private draggableTile;
 
   constructor(
     private initializationService: InitializationService,
@@ -96,7 +95,7 @@ export class HomePage implements AfterViewInit {
       this.dragControls = new DragControls(this.draggableObjects, this.camera, this.renderer.domElement);
       this.dragControls.transformGroup = true;
       this.setDraggableEvents(lines, col, radius, cooBeforeDrag);
-      this.draggableObjects[0] = this.generateHexagonService.addTree(hexagonRtrn.cylinder, '', this.scene);
+      this.draggableObjects[0] = this.generateHexagonService.addTree(hexagonRtrn.cylinder);
     }
   };
 

@@ -89,7 +89,7 @@ export class GenerateHexagonService {
 
   };
 
-  addTree = (tile, position, scene) => {
+  addTree = (tile) => {
     this.modelLoader.load('./assets/arbre.gltf', (gltf) => {
       gltf.scene.position.setX(tile.position.x);
       gltf.scene.position.setY(0);
