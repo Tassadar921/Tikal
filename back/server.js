@@ -21,6 +21,7 @@ app.use(cors());
 app.use(session);
 
 const languages = require('./modules/languages.js');
+const gameInit = require('./modules/gameInit.js');
 
 if (app.get('env') === 'production') {
     app.set('trust proxy', 1);
@@ -35,8 +36,8 @@ app.post('/getTranslation', (req, res) => {
     languages.getTranslation(req.body.language, res);
 });
 
-app.post('/getTilesList', (req, res) => {
-
+app.get('/getTilesList', (req, res) => {
+    gameInit.getTilesList(res);
 });
 
 

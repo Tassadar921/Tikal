@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import {DragControls} from 'three/examples/jsm/controls/DragControls';
 import {InitializationService} from '../shared/services/initialization.service';
 import {GenerateHexagonService} from '../shared/services/generate-hexagon.service';
-import {Vector3} from 'three';
+import {ApiService} from '../shared/services/api.service';
 
 @Component({
   selector: 'app-home',
@@ -28,11 +28,12 @@ export class HomePage implements AfterViewInit {
 
   constructor(
     private initializationService: InitializationService,
-    private generateHexagonService: GenerateHexagonService
+    private generateHexagonService: GenerateHexagonService,
+    private apiService: ApiService
   ) {
   }
 
-  ngAfterViewInit() {
+  async ngAfterViewInit() {
     //col and lines of the board, radius of hexagons
     const lines = 8;
     const col = 10;
@@ -129,7 +130,7 @@ export class HomePage implements AfterViewInit {
     //fires each time dragging object moves
     this.dragControls.addEventListener('drag', (e) => {
 
-      const difference = new Vector3();
+      const difference = new THREE.Vector3();
       difference.x = e.object.position.x - cooBeforeDrag.x;
       difference.y = e.object.position.y - cooBeforeDrag.y;
 

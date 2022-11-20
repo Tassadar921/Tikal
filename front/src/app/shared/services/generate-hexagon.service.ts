@@ -90,7 +90,7 @@ export class GenerateHexagonService {
   };
 
   addTree = (tile) => {
-    this.modelLoader.load('./assets/arbre.gltf', (gltf) => {
+    this.modelLoader.load('./assets/3Dmodels/arbre2.gltf', (gltf) => {
       gltf.scene.position.setX(tile.position.x);
       gltf.scene.position.setY(0);
       gltf.scene.position.setZ(tile.position.z);

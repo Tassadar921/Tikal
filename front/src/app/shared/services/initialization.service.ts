@@ -88,9 +88,6 @@ export class InitializationService {
     return controls;
   };
 
-  configLight = () => {
-    const light = new THREE.PointLight(0xFFFFFF, 30, 0);
-    light.position.set(0, 0, 10);
-    return (light);
-  };
+  //creates a light everywhere and returning it
+  configLight = () => new THREE.AmbientLight(0xffffff);
 }
