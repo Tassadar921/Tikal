@@ -216,7 +216,13 @@ export class HomePage implements AfterViewInit {
             //next we set our dropped hexagon's sprites, copying dragged hexagon's ones
             //then copying its rotation
             object.userData.piecePlaced = true;
-            object.children = e.object.children;
+            object.children = [];
+            for(const child of e.object.children){
+              const clone = child.clone();
+              child.position.x = child.userData.x+object.position.x;
+              child.position.y = child.userData.y+object.position.y;
+              object.add(clone);
+            }
             object.material = e.object.material;
             object.rotation.x = e.object.rotation.x;
             object.rotation.y = e.object.rotation.y;

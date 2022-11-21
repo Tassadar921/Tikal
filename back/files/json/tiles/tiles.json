@@ -1,6 +1,7 @@
 [
   {
-    "A": [
+    "letter": "A",
+    "data": [
       {
         "id": "A0",
         "type": "treasure",
@@ -79,8 +80,11 @@
           "northWest": 0
         }
       }
-    ],
-    "B": [
+    ]
+  },
+  {
+    "letter": "B",
+    "data": [
       {
         "id": "B0",
         "type": "plain",
@@ -159,8 +163,11 @@
           "northWest": 0
         }
       }
-    ],
-    "C": [
+    ]
+  },
+  {
+    "letter": "C",
+    "data": [
       {
         "id": "C0",
         "type": "temple",
@@ -226,8 +233,11 @@
           "northWest": 0
         }
       }
-    ],
-    "D": [
+    ]
+  },
+  {
+    "letter": "D",
+    "data": [
       {
         "id": "D0",
         "type": "temple",
@@ -293,8 +303,11 @@
           "northWest": 0
         }
       }
-    ],
-    "E": [
+    ]
+  },
+  {
+    "letter": "E",
+    "data": [
       {
         "id": "E0",
         "type": "plain",
@@ -360,8 +373,11 @@
           "northWest": 0
         }
       }
-    ],
-    "F": [
+    ]
+  },
+  {
+    "letter": "F",
+    "data": [
       {
         "id": "F0",
         "type": "volcano",
@@ -427,8 +443,11 @@
           "northWest": 0
         }
       }
-    ],
-    "G": [
+    ]
+  },
+  {
+    "letter": "G",
+    "data": [
       {
         "id": "G0",
         "type": "plain",
