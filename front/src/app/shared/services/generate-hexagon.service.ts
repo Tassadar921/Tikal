@@ -7,8 +7,9 @@ import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader';
 })
 export class GenerateHexagonService {
 
+  public cooPoints = [];
+
   private modelLoader = new GLTFLoader();
-  private cooPoints = [];
 
   constructor() {
   }
@@ -117,16 +118,19 @@ export class GenerateHexagonService {
         const initX = gltf.scene.position.x;
         const initY = gltf.scene.position.y;
 
-        if(gltf.scene.position.x>0){
-          gltf.scene.position.setX(gltf.scene.position.x-Math.random() * 3+coo.y);
-        }else{
-          gltf.scene.position.setX(gltf.scene.position.x+Math.random() * 3+coo.y);
-        }
-        if(gltf.scene.position.z>0){
-          gltf.scene.position.setZ(gltf.scene.position.z-Math.random() * 3+coo.x);
-        }else{
-          gltf.scene.position.setZ(gltf.scene.position.z+Math.random() * 3+coo.x);
-        }
+        gltf.scene.position.x += coo.y;
+        gltf.scene.position.z += coo.x;
+
+        // if(gltf.scene.position.x>0){
+        //   gltf.scene.position.setX(gltf.scene.position.x-Math.random() * 3+coo.y);
+        // }else{
+        //   gltf.scene.position.setX(gltf.scene.position.x+Math.random() * 3+coo.y);
+        // }
+        // if(gltf.scene.position.z>0){
+        //   gltf.scene.position.setZ(gltf.scene.position.z-Math.random() * 3+coo.x);
+        // }else{
+        //   gltf.scene.position.setZ(gltf.scene.position.z+Math.random() * 3+coo.x);
+        // }
         gltf.scene.rotateY(Math.random()*Math.PI);
         gltf.scene.userData = {x:gltf.scene.position.x-initX, y:gltf.scene.position.z-initY};
         tile.add(gltf.scene);
