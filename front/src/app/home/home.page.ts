@@ -4,6 +4,7 @@ import {DragControls} from 'three/examples/jsm/controls/DragControls';
 import {InitializationService} from '../shared/services/initialization.service';
 import {GenerateHexagonService} from '../shared/services/generate-hexagon.service';
 import {ApiService} from '../shared/services/api.service';
+import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader';
 
 @Component({
   selector: 'app-home',
@@ -48,6 +49,8 @@ export class HomePage implements AfterViewInit {
     this.matrix = this.initializationService.initMatrix(lines, col);
 
     this.scene.add(this.initializationService.configLight());
+
+    this.generateHexagonService.initCooPoints(radius);
 
     //save xy in case of non-droppable place in which object is dropped
     const cooBeforeDrag = {x: 0, y: 0, z: 0};

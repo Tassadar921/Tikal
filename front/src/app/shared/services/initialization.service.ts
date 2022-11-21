@@ -7,8 +7,7 @@ import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
 })
 export class InitializationService {
 
-  constructor() {
-  }
+  constructor() {}
 
   //calculates graphic scale from canvas width and height, better graphic render, returning a proportion
   calculateAspectRatio = (canvas) => {

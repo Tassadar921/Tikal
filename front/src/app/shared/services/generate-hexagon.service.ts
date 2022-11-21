@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import {Injectable} from '@angular/core';
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader';
 
@@ -8,13 +8,27 @@ import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader';
 export class GenerateHexagonService {
 
   private modelLoader = new GLTFLoader();
+  private cooPoints = [];
 
-  constructor() {}
+  constructor() {
+  }
+
+  initCooPoints = (radius) => {
+    const h = Math.sqrt(3) / 2 * radius;
+    this.cooPoints = [
+      {x:radius/2, y:h},
+      {x:radius, y:0},
+      {x:radius/2, y:-h},
+      {x:-radius/2, y:-h},
+      {x:-radius, y:0},
+      {x:-radius/2, y:h},
+    ];
+  };
 
   generateHexagon = (x, y, matrix, draggableObjects, lines, col, radius, plane, letter, draggable = true) => {
     //calculating graphic xy of cylinder from matrix's xy
-    const cylinderX = x * (radius * Math.cos(2 * Math.PI) + 2*radius);
-    const cylinderY = -y*radius*Math.cos(Math.PI/6);
+    const cylinderX = x * (radius * Math.cos(2 * Math.PI) + 2 * radius);
+    const cylinderY = -y * radius * Math.cos(Math.PI / 6);
 
     //creating shape of regular cylinder of 6 segments => hexagon in 3D
     const geometry = new THREE.CylinderGeometry(radius, radius, radius / 5, 6);
@@ -32,15 +46,15 @@ export class GenerateHexagonService {
     } else { //we add textures
       materials.push(new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/dirt.png')}));
       materials.push(new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/herbe.png')}));
-      materials.push(new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/back'+letter+'.png')}));
+      materials.push(new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/back' + letter + '.png')}));
     }
 
     //creating 3D object
-    const cylinder = new THREE.Mesh(geometry, materials);
+    let cylinder = new THREE.Mesh(geometry, materials);
 
     //rotating object in XY-plane
     cylinder.rotateX(Math.PI / 2);
-    cylinder.rotateY(-Math.PI/2);
+    cylinder.rotateY(-Math.PI / 2);
 
     //updating xy of 3D object from cylinderX and cylinderY
     cylinder.position.x = cylinderX / 2 - Math.floor(col / 2) * (radius + radius * Math.sin(Math.PI / 6)) + radius * Math.sin(Math.PI / 6);
@@ -54,10 +68,10 @@ export class GenerateHexagonService {
       cylinder.add(edgeWireframe);
 
       cylinder.userData = {
-        piecePlaced:false,
-        draggable:false,
-        x:y,
-        y:x
+        piecePlaced: false,
+        draggable: false,
+        x: y,
+        y: x
       };
 
       if (x === 0 && y === 0) {//starting hexagon, special texture and visible
@@ -67,7 +81,8 @@ export class GenerateHexagonService {
         cylinder.material[0] = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/dirt.png')});
         cylinder.material[1] = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/herbe.png')});
         cylinder.material[2] = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/back.png')});
-      }else{
+        cylinder = this.addTree(cylinder);
+      } else {
         cylinder.visible = false;
       }
       //x and y on graphics and in matrix are inverted
@@ -78,7 +93,7 @@ export class GenerateHexagonService {
       plane.add(cylinder);
     } else {//if draggable => pushing in objects
       cylinder.userData = {
-        draggable:true
+        draggable: true
       };
       cylinder.visible = true;
       draggableObjects = [cylinder];
@@ -90,12 +105,17 @@ export class GenerateHexagonService {
   };
 
   addTree = (tile) => {
-    this.modelLoader.load('./assets/3Dmodels/arbre2.gltf', (gltf) => {
-      gltf.scene.position.setX(tile.position.x);
-      gltf.scene.position.setY(0);
-      gltf.scene.position.setZ(tile.position.z);
-      tile.add(gltf.scene);
-    });
+    for(const coo of this.cooPoints) {
+      const num = Math.ceil(Math.random() * 3);
+      this.modelLoader.load('./assets/3Dmodels/arbre' + num + '.gltf', (gltf) => {
+        if (num === 2 || num === 3) {
+          gltf.scene.scale.set(1.5, 1.5, 1.5);
+        }
+        gltf.scene.position.setX(gltf.scene.position.x+coo.y);
+        gltf.scene.position.setZ(gltf.scene.position.z+coo.x);
+        tile.add(gltf.scene);
+      });
+    }
     return tile;
   };
 }
