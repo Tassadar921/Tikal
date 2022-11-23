@@ -29,7 +29,7 @@ export class GenerateHexagonService {
     ];
   };
 
-  generateHexagon = (x, y, matrix, draggableObjects, lines, col, radius, plane, letter, draggable = true) => {
+  generateHexagon = (x, y, matrix, draggableObjects, lines, col, radius, plane, draggable = true) => {
     //calculating graphic xy of cylinder from matrix's xy
     const cylinderX = x * (radius * Math.cos(2 * Math.PI) + 2 * radius);
     const cylinderY = -y * radius * Math.cos(Math.PI / 6);
@@ -43,14 +43,18 @@ export class GenerateHexagonService {
     //i=2: bottom
     const materials = [];
 
+    let data;
+
     if (!draggable) { //transparent hexagon
       materials.push(new THREE.MeshBasicMaterial({transparent: true, opacity: 0}));
       materials.push(new THREE.MeshBasicMaterial({transparent: true, opacity: 0}));
       materials.push(new THREE.MeshBasicMaterial({transparent: true, opacity: 0}));
     } else { //we add textures
+      data = this.gameService.getTile();
+      console.log(data);
       materials.push(new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/dirt.png')}));
       materials.push(new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/herbe.png')}));
-      materials.push(new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/back' + letter + '.png')}));
+      materials.push(new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/back' + data.id[0] + '.png')}));
     }
 
     //creating 3D object
@@ -98,7 +102,7 @@ export class GenerateHexagonService {
     } else {//if draggable => pushing in objects
       cylinder.userData = {
         draggable: true,
-        tile: this.gameService.getTile(),
+        tile: data
       };
       cylinder.visible = true;
       draggableObjects = [cylinder];
@@ -133,17 +137,16 @@ export class GenerateHexagonService {
     return tile;
   };
 
+  //rotates the tile's texture + paths' directions in userData.tile
   rotate = (tile) => {
     tile.rotateY(-Math.PI / 3);
     const tmp = tile.userData.tile.directions.north;
-    console.log(tile.userData.tile.directions);
     tile.userData.tile.directions.north = tile.userData.tile.directions.northWest;
     tile.userData.tile.directions.northWest = tile.userData.tile.directions.southWest;
     tile.userData.tile.directions.southWest = tile.userData.tile.directions.south;
     tile.userData.tile.directions.south = tile.userData.tile.directions.southEast;
     tile.userData.tile.directions.southEast = tile.userData.tile.directions.northEast;
     tile.userData.tile.directions.northEast = tmp;
-    console.log(tile.userData.tile.directions);
     return tile;
   };
 }

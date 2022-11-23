@@ -69,18 +69,18 @@ export class HomePage implements AfterViewInit {
       for (let x = 0; x < col; x++) {
         if ((y + 1) % 2) { //if index of line is even
           if ((x + 1) % 2) { //if index of col is even
-            this.generateHexagon(x, y, this.matrix, this.draggableObjects, lines, col, radius, this.plane, '', cooBeforeDrag, false);
+            this.generateHexagon(x, y, this.matrix, this.draggableObjects, lines, col, radius, this.plane, cooBeforeDrag, false);
           }
         } else {
           if (x % 2) { //if line and col both odd
-            this.generateHexagon(x, y, this.matrix, this.draggableObjects, lines, col, radius, this.plane, '', cooBeforeDrag, false);
+            this.generateHexagon(x, y, this.matrix, this.draggableObjects, lines, col, radius, this.plane, cooBeforeDrag, false);
           }
         }
       }
     }
 
     //creating a draggable object for testing
-    this.generateHexagon(5, -2, this.matrix, this.draggableObjects, lines, col, radius, this.plane, 'A', cooBeforeDrag, true);
+    this.generateHexagon(5, -2, this.matrix, this.draggableObjects, lines, col, radius, this.plane, cooBeforeDrag, true);
     //fires each time pointer moves
     this.renderer.domElement.addEventListener('pointermove', (e) => {
       //normalized coo of pointer
@@ -91,17 +91,17 @@ export class HomePage implements AfterViewInit {
     setInterval(this.animate, 1000 / fps);
   }
 
-  generateHexagon = (x, y, matrix, draggableObjects, lines, col, radius, plane, letter, cooBeforeDrag, draggable) => {
-    const hexagonRtrn = this.generateHexagonService.generateHexagon(
-      x, y, matrix, draggableObjects, lines, col, radius, plane, letter, draggable);
-    this.draggableObjects = hexagonRtrn.draggableObjects;
-    this.plane = hexagonRtrn.plane;
-    this.matrix = hexagonRtrn.matrix;
+  generateHexagon = (x, y, matrix, draggableObjects, lines, col, radius, plane, cooBeforeDrag, draggable) => {
+    const rtrn = this.generateHexagonService.generateHexagon(
+      x, y, matrix, draggableObjects, lines, col, radius, plane, draggable);
+    this.draggableObjects = rtrn.draggableObjects;
+    this.plane = rtrn.plane;
+    this.matrix = rtrn.matrix;
     if (draggable) {
       this.dragControls = new DragControls(this.draggableObjects, this.camera, this.renderer.domElement);
       this.dragControls.transformGroup = true;
       this.setDraggableEvents(lines, col, radius, cooBeforeDrag);
-      this.draggableObjects[0] = this.generateHexagonService.addTree(hexagonRtrn.cylinder);
+      this.draggableObjects[0] = this.generateHexagonService.addTree(rtrn.cylinder);
     }
   };
 
@@ -226,7 +226,6 @@ export class HomePage implements AfterViewInit {
               child.position.z-=(object.position.x-e.object.position.x);
               child.position.y-=radius/2;
             }
-            console.log(object.userData);
             object.material = e.object.material;
             object.rotation.x = e.object.rotation.x;
             object.rotation.y = e.object.rotation.y;
@@ -238,7 +237,7 @@ export class HomePage implements AfterViewInit {
                 this.draggableObjects.splice(m, 1);
                 m = this.draggableObjects.length;
                 //dev tool : initiates a new hexagon at the same place
-                this.generateHexagon(5, -2, this.matrix, this.draggableObjects, lines, col, radius, this.plane, 'A', cooBeforeDrag, true);
+                this.generateHexagon(5, -2, this.matrix, this.draggableObjects, lines, col, radius, this.plane, cooBeforeDrag, true);
               }
             }
           }
