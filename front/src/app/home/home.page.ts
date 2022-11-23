@@ -219,17 +219,19 @@ export class HomePage implements AfterViewInit {
             //then copying its rotation
             object.userData.piecePlaced = true;
             object.children = e.object.children;
+            console.log(object.position);
+            console.log(e.object.position);
+            console.log(object.position.x-e.object.position.x);
+            console.log(object.position.y-e.object.position.y);
             for(const child of object.children){
-              child.position.x-=(object.position.x-e.object.position.x);
-              child.position.z-=(object.position.y-e.object.position.y);
+              child.position.x-=(object.position.y-e.object.position.y);
+              child.position.z-=(object.position.x-e.object.position.x);
+              child.position.y-=radius/2;
             }
             object.material = e.object.material;
             object.rotation.x = e.object.rotation.x;
             object.rotation.y = e.object.rotation.y;
             object.rotation.z = e.object.rotation.z;
-            for(const child of object.children) {
-              child.position.y-=radius/2;
-            }
             //finally deleting the dragged object from draggableObjects and from the plane
             this.plane.remove(e.object);
             for (let m = 0; m < this.draggableObjects.length; m++) {

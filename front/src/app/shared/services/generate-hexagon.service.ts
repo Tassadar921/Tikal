@@ -112,7 +112,7 @@ export class GenerateHexagonService {
         if (num === 2 || num === 3) {
           gltf.scene.scale.set(1+Math.random(), 1+Math.random(), 1+Math.random());
         }else{
-          gltf.scene.scale.set(Math.random(),Math.random(),Math.random());
+          gltf.scene.scale.set(Math.random()+0.2,Math.random()+0.2,Math.random()+0.2);
         }
 
         const initX = gltf.scene.position.x;
@@ -121,16 +121,6 @@ export class GenerateHexagonService {
         gltf.scene.position.x += coo.y;
         gltf.scene.position.z += coo.x;
 
-        // if(gltf.scene.position.x>0){
-        //   gltf.scene.position.setX(gltf.scene.position.x-Math.random() * 3+coo.y);
-        // }else{
-        //   gltf.scene.position.setX(gltf.scene.position.x+Math.random() * 3+coo.y);
-        // }
-        // if(gltf.scene.position.z>0){
-        //   gltf.scene.position.setZ(gltf.scene.position.z-Math.random() * 3+coo.x);
-        // }else{
-        //   gltf.scene.position.setZ(gltf.scene.position.z+Math.random() * 3+coo.x);
-        // }
         gltf.scene.rotateY(Math.random()*Math.PI);
         gltf.scene.userData = {x:gltf.scene.position.x-initX, y:gltf.scene.position.z-initY};
         tile.add(gltf.scene);
