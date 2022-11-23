@@ -1,6 +1,7 @@
 import {Injectable} from '@angular/core';
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader';
+import {GameService} from './game.service';
 
 @Injectable({
   providedIn: 'root'
@@ -11,8 +12,10 @@ export class GenerateHexagonService {
 
   private modelLoader = new GLTFLoader();
 
-  constructor() {
-  }
+  constructor(
+    private gameService: GameService
+  ) {}
+
 
   initCooPoints = (radius) => {
     const h = Math.sqrt(3) / 2 * radius;
@@ -94,7 +97,8 @@ export class GenerateHexagonService {
       plane.add(cylinder);
     } else {//if draggable => pushing in objects
       cylinder.userData = {
-        draggable: true
+        draggable: true,
+        tile: this.gameService.getTile(),
       };
       cylinder.visible = true;
       draggableObjects = [cylinder];
@@ -126,6 +130,20 @@ export class GenerateHexagonService {
         tile.add(gltf.scene);
       });
     }
+    return tile;
+  };
+
+  rotate = (tile) => {
+    tile.rotateY(-Math.PI / 3);
+    const tmp = tile.userData.tile.directions.north;
+    console.log(tile.userData.tile.directions);
+    tile.userData.tile.directions.north = tile.userData.tile.directions.northWest;
+    tile.userData.tile.directions.northWest = tile.userData.tile.directions.southWest;
+    tile.userData.tile.directions.southWest = tile.userData.tile.directions.south;
+    tile.userData.tile.directions.south = tile.userData.tile.directions.southEast;
+    tile.userData.tile.directions.southEast = tile.userData.tile.directions.northEast;
+    tile.userData.tile.directions.northEast = tmp;
+    console.log(tile.userData.tile.directions);
     return tile;
   };
 }

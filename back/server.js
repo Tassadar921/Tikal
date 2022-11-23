@@ -28,6 +28,8 @@ if (app.get('env') === 'production') {
     session.cookie.secure = true;
 }
 
+/////////////////////// RAJOUTER 3 TUILES ////////////////////////
+
 app.get('/getLanguagesList', (req, res) => {
     languages.getLanguagesList(res);
 });

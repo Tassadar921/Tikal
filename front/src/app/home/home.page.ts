@@ -4,7 +4,7 @@ import {DragControls} from 'three/examples/jsm/controls/DragControls';
 import {InitializationService} from '../shared/services/initialization.service';
 import {GenerateHexagonService} from '../shared/services/generate-hexagon.service';
 import {ApiService} from '../shared/services/api.service';
-import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader';
+import {GameService} from '../shared/services/game.service';
 
 @Component({
   selector: 'app-home',
@@ -30,7 +30,8 @@ export class HomePage implements AfterViewInit {
   constructor(
     private initializationService: InitializationService,
     private generateHexagonService: GenerateHexagonService,
-    private apiService: ApiService
+    private apiService: ApiService,
+    private gameService: GameService
   ) {
   }
 
@@ -51,6 +52,7 @@ export class HomePage implements AfterViewInit {
     this.scene.add(this.initializationService.configLight());
 
     this.generateHexagonService.initCooPoints(radius);
+    await this.gameService.initTilesToPlace();
 
     //save xy in case of non-droppable place in which object is dropped
     const cooBeforeDrag = {x: 0, y: 0, z: 0};
@@ -85,8 +87,6 @@ export class HomePage implements AfterViewInit {
       this.pointer.x = (e.clientX / this.renderer.domElement.width) * 2 - 1;
       this.pointer.y = -(e.clientY / this.renderer.domElement.height) * 2 + 1;
     });
-
-    console.log(this.scene.children);
 
     setInterval(this.animate, 1000 / fps);
   }
@@ -128,7 +128,7 @@ export class HomePage implements AfterViewInit {
       //enable clockwise rotation on key press 'r'
       document.body.addEventListener('keydown', (input) => {
         if (input.key.toLowerCase() === 'r') {
-          e.object.rotateY(-Math.PI / 3);
+          e.object = this.generateHexagonService.rotate(e.object);
         }
       });
     });
@@ -163,7 +163,7 @@ export class HomePage implements AfterViewInit {
       //piece rotation on key press 'r'
       document.body.removeEventListener('keydown', (input) => {
         if (input.key.toLowerCase() === 'r') {
-          e.object.rotateY(-Math.PI / 3);
+          e.object = this.generateHexagonService.rotate(e.object);
         }
       });
 
@@ -218,16 +218,15 @@ export class HomePage implements AfterViewInit {
             //next we set our dropped hexagon's sprites, copying dragged hexagon's ones
             //then copying its rotation
             object.userData.piecePlaced = true;
+            object.userData.tile = e.object.userData.tile;
             object.children = e.object.children;
-            console.log(object.position);
-            console.log(e.object.position);
-            console.log(object.position.x-e.object.position.x);
-            console.log(object.position.y-e.object.position.y);
+            //children placement in function of dropped tile and dropping area
             for(const child of object.children){
               child.position.x-=(object.position.y-e.object.position.y);
               child.position.z-=(object.position.x-e.object.position.x);
               child.position.y-=radius/2;
             }
+            console.log(object.userData);
             object.material = e.object.material;
             object.rotation.x = e.object.rotation.x;
             object.rotation.y = e.object.rotation.y;
