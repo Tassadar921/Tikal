@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import {Injectable} from '@angular/core';
 import {ApiService} from './api.service';
 
 @Injectable({
@@ -6,11 +6,12 @@ import {ApiService} from './api.service';
 })
 export class GameService {
 
-  private tilesToPlace;
+  private tilesToPlace: Array<Object> | undefined = [];
 
   constructor(
     private apiService: ApiService
-  ) {}
+  ) {
+  }
 
   initTilesToPlace = async () => this.tilesToPlace = await this.apiService.getTilesList();
 
@@ -22,14 +23,19 @@ export class GameService {
 
   getRandomTileToPlace = () => {
     //takes the first letter of tilesToPlace, chooses a random tile from the list of tiles with this letter and returns it
+    // @ts-ignore
     const id = Math.floor(Math.random() * this.tilesToPlace[0].data.length);
+    // @ts-ignore
     return {tile: this.tilesToPlace[0].data[id], id};
   };
 
-  clearTilesToPlace = (id) => {
+  clearTilesToPlace = (id: number) => {
+    // @ts-ignore
     this.tilesToPlace[0].data.splice(id, 1);
-    if(!this.tilesToPlace[0].data.length){
-      this.tilesToPlace.splice(0,1);
+    // @ts-ignore
+    if (!this.tilesToPlace[0].data.length) {
+      // @ts-ignore
+      this.tilesToPlace.splice(0, 1);
     }
   };
 }

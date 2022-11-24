@@ -17,18 +17,25 @@ export class GenerateHexagonService {
   ) {}
 
 
-  initCooPoints = (radius) => {
+  initCooPoints = (radius: number) => {
     const h = Math.sqrt(3) / 2 * radius;
     this.cooPoints = [
+      // @ts-ignore
       {x:radius/2, y:h},
+      // @ts-ignore
       {x:radius, y:0},
+      // @ts-ignore
       {x:radius/2, y:-h},
+      // @ts-ignore
       {x:-radius/2, y:-h},
+      // @ts-ignore
       {x:-radius, y:0},
+      // @ts-ignore
       {x:-radius/2, y:h},
     ];
   };
 
+  // @ts-ignore
   generateHexagon = (x, y, matrix, draggableObjects, lines, col, radius, plane, draggable = true) => {
     //calculating graphic xy of cylinder from matrix's xy
     const cylinderX = x * (radius * Math.cos(2 * Math.PI) + 2 * radius);
@@ -83,7 +90,7 @@ export class GenerateHexagonService {
       };
 
       if (x === 0 && y === 0) {//starting hexagon, special texture and visible
-        cylinder.userData.piecePlaced = true;
+        cylinder.userData['piecePlaced'] = true;
         cylinder.children = [];
         cylinder.visible = true;
         cylinder.material[0] = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/dirt.png')});
@@ -113,7 +120,7 @@ export class GenerateHexagonService {
 
   };
 
-  addTree = (tile) => {
+  addTree = (tile: THREE.Mesh<THREE.CylinderGeometry, THREE.MeshBasicMaterial[]>) => {
     for(const coo of this.cooPoints) {
       const num = Math.ceil(Math.random() * 5);
       this.modelLoader.load('./assets/3Dmodels/arbre' + num + '.gltf', (gltf) => {
@@ -126,7 +133,9 @@ export class GenerateHexagonService {
         const initX = gltf.scene.position.x;
         const initY = gltf.scene.position.y;
 
+        // @ts-ignore
         gltf.scene.position.x += coo.y;
+        // @ts-ignore
         gltf.scene.position.z += coo.x;
 
         gltf.scene.rotateY(Math.random()*Math.PI);
@@ -138,15 +147,15 @@ export class GenerateHexagonService {
   };
 
   //rotates the tile's texture + paths' directions in userData.tile
-  rotate = (tile) => {
+  rotate = (tile: THREE.Mesh<THREE.CylinderGeometry, THREE.MeshBasicMaterial[]>) => {
     tile.rotateY(-Math.PI / 3);
-    const tmp = tile.userData.tile.directions.north;
-    tile.userData.tile.directions.north = tile.userData.tile.directions.northWest;
-    tile.userData.tile.directions.northWest = tile.userData.tile.directions.southWest;
-    tile.userData.tile.directions.southWest = tile.userData.tile.directions.south;
-    tile.userData.tile.directions.south = tile.userData.tile.directions.southEast;
-    tile.userData.tile.directions.southEast = tile.userData.tile.directions.northEast;
-    tile.userData.tile.directions.northEast = tmp;
+    const tmp = tile.userData['tile'].directions.north;
+    tile.userData['tile'].directions.north = tile.userData['tile'].directions.northWest;
+    tile.userData['tile'].directions.northWest = tile.userData['tile'].directions.southWest;
+    tile.userData['tile'].directions.southWest = tile.userData['tile'].directions.south;
+    tile.userData['tile'].directions.south = tile.userData['tile'].directions.southEast;
+    tile.userData['tile'].directions.southEast = tile.userData['tile'].directions.northEast;
+    tile.userData['tile'].directions.northEast = tmp;
     return tile;
   };
 }

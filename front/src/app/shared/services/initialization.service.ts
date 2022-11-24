@@ -10,7 +10,7 @@ export class InitializationService {
   constructor() {}
 
   //calculates graphic scale from canvas width and height, better graphic render, returning a proportion
-  calculateAspectRatio = (canvas) => {
+  calculateAspectRatio = (canvas: HTMLCanvasElement) => {
     const height = canvas.clientHeight;
     if (height === 0) {
       return 0;
@@ -20,7 +20,7 @@ export class InitializationService {
   };
 
   //creates the XY plane, returning a 3D object
-  configPlane = (lines, col, radius) => {
+  configPlane = (lines: number, col: number, radius: number) => {
     const geometry = new THREE.PlaneGeometry(
       col * (radius + radius * Math.sin(Math.PI / 6)) + radius * Math.sin(Math.PI / 6) + 1000,
       (lines + 1) * radius * Math.cos(Math.PI / 6) + 1000
@@ -34,7 +34,7 @@ export class InitializationService {
   };
 
   //creates scene, adding plane and returning it
-  configScene = (plane) => {
+  configScene = (plane: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial> | THREE.Object3D<THREE.Event>) => {
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0, 0, 0);
     scene.add(plane);
@@ -42,11 +42,12 @@ export class InitializationService {
   };
 
   //created matrix of line*col, returning it
-  initMatrix = (line, col) => {
+  initMatrix = (line: number, col: number) => {
     const matrix = [];
     for (let l = 0; l < line; l++) {
       matrix.push([]);
       for (let c = 0; c < col; c++) {
+        // @ts-ignore
         matrix[l].push('');
       }
     }
@@ -54,7 +55,7 @@ export class InitializationService {
   };
 
   //created camera from proportion of calculateAspectRatio, making it looking at scene.position and returning it
-  configCamera = (canvas, scene) => {
+  configCamera = (canvas: HTMLCanvasElement, scene: THREE.Object3D<THREE.Event> | THREE.Scene) => {
     const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.5, 1000);
     camera.aspect = this.calculateAspectRatio(canvas);
     camera.updateProjectionMatrix();
@@ -64,7 +65,7 @@ export class InitializationService {
   };
 
   //created renderer as a WebGLRenderer and returning it
-  configRenderer = (canvas) => {
+  configRenderer = (canvas: HTMLCanvasElement) => {
     const renderer = new THREE.WebGLRenderer({
       canvas,
       alpha: true,
@@ -74,7 +75,7 @@ export class InitializationService {
   };
 
   //created an OrbitControls object and returning it
-  configControls = (canvas, camera) => {
+  configControls = (canvas: HTMLElement | undefined, camera: THREE.Camera | THREE.PerspectiveCamera) => {
     const controls = new OrbitControls(camera, canvas);
     controls.enableZoom = true;
     controls.minAzimuthAngle = -Math.PI / 2;
