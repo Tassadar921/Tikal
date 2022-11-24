@@ -4,6 +4,19 @@ const logger = require('morgan');
 const methodOverride = require('method-override');
 const cors = require('cors');
 
+const allowedOrigins = 'http://localhost:8100';
+
+// Reflect the origin if it's in the allowed list or not defined (cURL, Postman, etc.)
+const corsOptions = {
+    origin: (origin, callback) => {
+        if (allowedOrigins.includes(origin) || !origin) {
+            callback(null, true);
+        } else {
+            callback(new Error('Origin not allowed by CORS'));
+        }
+    },
+};
+
 const session = require('express-session')({
     secret: 'eb8fcc253281389225b4f7872f2336918ddc7f689e1fc41b64d5c4f378cdc438',
     resave: true,
@@ -27,6 +40,13 @@ if (app.get('env') === 'production') {
     app.set('trust proxy', 1);
     session.cookie.secure = true;
 }
+
+// Enable preflight requests for all routes
+app.options('*', cors(corsOptions));
+
+app.get('/', cors(corsOptions), (req, res, next) => {
+    res.json({ message: 'This route is CORS-enabled for an allowed origin.' });
+});
 
 /////////////////////// RAJOUTER 3 TUILES ////////////////////////
 
