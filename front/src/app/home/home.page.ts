@@ -7,6 +7,7 @@ import {ApiService} from '../shared/services/api.service';
 import {GameService} from '../shared/services/game.service';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import {Camera} from 'three';
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'app-home',
@@ -33,7 +34,8 @@ export class HomePage implements AfterViewInit {
     private initializationService: InitializationService,
     private generateHexagonService: GenerateHexagonService,
     private apiService: ApiService,
-    private gameService: GameService
+    private gameService: GameService,
+    private router: Router
   ) {
   }
 
