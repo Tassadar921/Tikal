@@ -5,9 +5,7 @@ import {InitializationService} from '../shared/services/initialization.service';
 import {GenerateHexagonService} from '../shared/services/generate-hexagon.service';
 import {ApiService} from '../shared/services/api.service';
 import {GameService} from '../shared/services/game.service';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import {Camera} from 'three';
-import {Router} from '@angular/router';
 
 @Component({
   selector: 'app-home',
@@ -16,28 +14,26 @@ import {Router} from '@angular/router';
 })
 export class HomePage implements AfterViewInit {
 
-  @Input() name: string | undefined;
-  @ViewChild('canvas') canvasRef: ElementRef | undefined;
+  @ViewChild('canvas')
+  canvasRef!: ElementRef;
 
   private renderer = new THREE.WebGLRenderer();
-  private scene: THREE.Scene | THREE.Object3D<THREE.Event> | undefined;
-  private camera: THREE.Camera | THREE.PerspectiveCamera | undefined;
-  private controls: OrbitControls | undefined;
-  private plane: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial> | undefined;
+  private scene;
+  private camera;
+  private controls;
+  private plane;
   private raycaster = new THREE.Raycaster();
   private pointer = new THREE.Vector2();
-  private matrix: string | any[] | undefined;
+  private matrix;
   private draggableObjects = [];
-  private dragControls: DragControls | undefined;
+  private dragControls;
 
   constructor(
     private initializationService: InitializationService,
     private generateHexagonService: GenerateHexagonService,
     private apiService: ApiService,
     private gameService: GameService,
-    private router: Router
-  ) {
-  }
+  ) {}
 
   async ngAfterViewInit() {
     //col and lines of the board, radius of hexagons
@@ -56,6 +52,7 @@ export class HomePage implements AfterViewInit {
     this.scene.add(this.initializationService.configLight());
 
     this.generateHexagonService.initCooPoints(radius);
+
     await this.gameService.initTilesToPlace();
 
     //save xy in case of non-droppable place in which object is dropped
@@ -95,7 +92,6 @@ export class HomePage implements AfterViewInit {
     setInterval(this.animate, 1000 / fps);
   }
 
-  // @ts-ignore
   generateHexagon = (x, y, matrix, draggableObjects, lines, col, radius, plane, cooBeforeDrag, draggable) => {
     const rtrn = this.generateHexagonService.generateHexagon(
       x, y, matrix, draggableObjects, lines, col, radius, plane, draggable);
@@ -113,7 +109,6 @@ export class HomePage implements AfterViewInit {
 
   setDraggableEvents = (lines: number, col: number, radius: number, cooBeforeDrag: { x: any; y: any; z?: number; }) => {
     //fires when dragging starts
-    // @ts-ignore
     this.dragControls.addEventListener('dragstart', (e) => {
       //disable OrbitControls, if we don't it's total chaos
       // @ts-ignore
@@ -121,7 +116,6 @@ export class HomePage implements AfterViewInit {
 
       //making the piece beeing above the board
       e['object'].position.z = radius / 2;
-      console.log(e['object']);
 
       //saving xy of dragged object to move it back if invalid drop placement
       cooBeforeDrag.x = e['object'].position.x;
@@ -175,7 +169,7 @@ export class HomePage implements AfterViewInit {
     // @ts-ignore
     this.dragControls.addEventListener('dragend', (e) => {
       //re-enable OrbitControls
-      // @ts-ignore
+
       this.controls.enabled = true;
 
       //piece rotation on key press 'r'

@@ -1,14 +1,15 @@
-/**** Import npm libs ****/
 const express = require('express');
 const app = express();
 
-const path = express.static(__dirname + '/www')
+const appPath = express.static(__dirname + '/www')
+const errorPath = express.static(__dirname + '/error.html')
 
-app.use('', path);
+app.use('/', appPath);
+app.use('/home/*', errorPath);
 app.route('/home').get((req, res) => {
   res.sendFile(__dirname + '/www/index.html');
 });
 
-app.listen(4200, () => {
-  console.log('Serveur lancé sur le port 4200');
-});
+if(app.listen(process.env.PORT || 3000)) {
+  console.log('Server started on port 3000');
+}

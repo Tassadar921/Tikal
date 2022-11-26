@@ -6,7 +6,7 @@ const createWindow = async () => {
         height: 500
     });
 
-    await win.loadFile('./www/index.html');
+    await win.loadFile('www/index.html');
 }
 
 app.whenReady().then(async () => {

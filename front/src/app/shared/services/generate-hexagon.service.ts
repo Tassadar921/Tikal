@@ -17,27 +17,20 @@ export class GenerateHexagonService {
   ) {}
 
 
-  initCooPoints = (radius: number) => {
+  initCooPoints = (radius) => {
     const h = Math.sqrt(3) / 2 * radius;
     this.cooPoints = [
-      // @ts-ignore
-      {x:radius/2, y:h},
-      // @ts-ignore
-      {x:radius, y:0},
-      // @ts-ignore
-      {x:radius/2, y:-h},
-      // @ts-ignore
-      {x:-radius/2, y:-h},
-      // @ts-ignore
-      {x:-radius, y:0},
-      // @ts-ignore
-      {x:-radius/2, y:h},
+      {x:h, y:radius/2},
+      {x:0, y:radius},
+      {x:-h, y:radius/2},
+      {x:-h, y:-radius/2},
+      {x:0, y:-radius},
+      {x:h, y:-radius/2},
     ];
   };
 
-  // @ts-ignore
   generateHexagon = (x, y, matrix, draggableObjects, lines, col, radius, plane, draggable = true) => {
-    //calculating graphic xy of cylinder from matrix's xy
+    //calculating scene xy of cylinder from matrix's xy
     const cylinderX = x * (radius * Math.cos(2 * Math.PI) + 2 * radius);
     const cylinderY = -y * radius * Math.cos(Math.PI / 6);
 
@@ -50,18 +43,17 @@ export class GenerateHexagonService {
     //i=2: bottom
     const materials = [];
 
-    let data;
+    let tileData;
 
     if (!draggable) { //transparent hexagon
       materials.push(new THREE.MeshBasicMaterial({transparent: true, opacity: 0}));
       materials.push(new THREE.MeshBasicMaterial({transparent: true, opacity: 0}));
       materials.push(new THREE.MeshBasicMaterial({transparent: true, opacity: 0}));
     } else { //we add textures
-      data = this.gameService.getTile();
-      console.log(data);
+      tileData = this.gameService.getTile();
       materials.push(new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/dirt.png')}));
       materials.push(new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/herbe.png')}));
-      materials.push(new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/back' + data.id[0] + '.png')}));
+      materials.push(new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/back' + tileData.id[0] + '.png')}));
     }
 
     //creating 3D object
@@ -82,11 +74,12 @@ export class GenerateHexagonService {
 
       cylinder.add(edgeWireframe);
 
+      //xy reversed to find the object in matrix with this.matrix[userData.x][userData.y]
       cylinder.userData = {
         piecePlaced: false,
         draggable: false,
-        x: y,
-        y: x
+        x:y,
+        y:x
       };
 
       if (x === 0 && y === 0) {//starting hexagon, special texture and visible
@@ -109,7 +102,7 @@ export class GenerateHexagonService {
     } else {//if draggable => pushing in objects
       cylinder.userData = {
         draggable: true,
-        tile: data
+        tile: tileData
       };
       cylinder.visible = true;
       draggableObjects = [cylinder];
@@ -120,7 +113,7 @@ export class GenerateHexagonService {
 
   };
 
-  addTree = (tile: THREE.Mesh<THREE.CylinderGeometry, THREE.MeshBasicMaterial[]>) => {
+  addTree = (tile) => {
     for(const coo of this.cooPoints) {
       const num = Math.ceil(Math.random() * 5);
       this.modelLoader.load('./assets/3Dmodels/arbre' + num + '.gltf', (gltf) => {
@@ -133,10 +126,8 @@ export class GenerateHexagonService {
         const initX = gltf.scene.position.x;
         const initY = gltf.scene.position.y;
 
-        // @ts-ignore
-        gltf.scene.position.x += coo.y;
-        // @ts-ignore
-        gltf.scene.position.z += coo.x;
+        gltf.scene.position.x += coo.x;
+        gltf.scene.position.z += coo.y;
 
         gltf.scene.rotateY(Math.random()*Math.PI);
         gltf.scene.userData = {x:gltf.scene.position.x-initX, y:gltf.scene.position.z-initY};
@@ -147,15 +138,15 @@ export class GenerateHexagonService {
   };
 
   //rotates the tile's texture + paths' directions in userData.tile
-  rotate = (tile: THREE.Mesh<THREE.CylinderGeometry, THREE.MeshBasicMaterial[]>) => {
+  rotate = (tile) => {
     tile.rotateY(-Math.PI / 3);
-    const tmp = tile.userData['tile'].directions.north;
-    tile.userData['tile'].directions.north = tile.userData['tile'].directions.northWest;
-    tile.userData['tile'].directions.northWest = tile.userData['tile'].directions.southWest;
-    tile.userData['tile'].directions.southWest = tile.userData['tile'].directions.south;
-    tile.userData['tile'].directions.south = tile.userData['tile'].directions.southEast;
-    tile.userData['tile'].directions.southEast = tile.userData['tile'].directions.northEast;
-    tile.userData['tile'].directions.northEast = tmp;
+    const tmp = tile.userData.tile.directions.north;
+    tile.userData.tile.directions.north = tile.userData.tile.directions.northWest;
+    tile.userData.tile.directions.northWest = tile.userData.tile.directions.southWest;
+    tile.userData.tile.directions.southWest = tile.userData.tile.directions.south;
+    tile.userData.tile.directions.south = tile.userData.tile.directions.southEast;
+    tile.userData.tile.directions.southEast = tile.userData.tile.directions.northEast;
+    tile.userData.tile.directions.northEast = tmp;
     return tile;
   };
 }
