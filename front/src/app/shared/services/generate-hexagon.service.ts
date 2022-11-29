@@ -30,10 +30,10 @@ export class GenerateHexagonService {
     ];
 
     this.cooMiddleSides = [
-      {x:0, y:-h},
+      {x:0, y:-h+radius/40},
       {x:-3/4*radius, y:-h/2},
       {x:-3/4*radius, y:h/2},
-      {x:0, y:h},
+      {x:0, y:h-radius/40},
       {x:3/4*radius, y:h/2},
       {x:3/4*radius, y:-h/2},
     ]
@@ -167,6 +167,7 @@ export class GenerateHexagonService {
 
   //rotates the tile's texture + paths' directions in userData.tile
   rotate = (tile) => {
+    console.log('rotate');
     tile.rotateY(-Math.PI / 3);
     const tmp = tile.userData.tile.directions.north;
     tile.userData.tile.directions.north = tile.userData.tile.directions.northWest;
@@ -188,39 +189,35 @@ export class GenerateHexagonService {
   };
 
   drawPath = (tile, direction, value, radius) => {
-    const width = 1.5;
-    const height = 1;
+    for(let val=0; val<value; val++) {
+      tile = this.addStonePath(tile, direction, val, radius);
+    }
+    return tile;
+  };
+
+  addStonePath = (tile, direction, value, radius) => {
+    const width = radius/6;
+    const height = radius/10;
     const geometry = new THREE.BoxGeometry( height, 1, width );
-    const material = new THREE.MeshBasicMaterial( {color: 0xFF5733} );
+    const material = new THREE.MeshBasicMaterial( {map: new THREE.TextureLoader().load('./assets/pathTexture.jpg')} );
     const rock = new THREE.Mesh( geometry, material );
 
     rock.position.z = this.cooMiddleSides[this.getDirection(direction)].x;
     rock.position.x = this.cooMiddleSides[this.getDirection(direction)].y;
 
+    rock.position.y = radius/10-1/4;
+    rock.rotateY(-Math.PI/3 * this.getDirection(direction)%3);
+    tile.add(rock);
     if(rock.position.z<0){
-      rock.position.z += height/2;
-    }else{
-      rock.position.z -= height/2;
+      rock.position.z += height/2 + 1.3 * height*value;
+    }else if(rock.position.z>0){
+      rock.position.z -= height/2 + 1.3 * height*value;
     }
     if(rock.position.x<0){
-      rock.position.x += height/2;
-    }else{
-      rock.position.x -= height/2;
-    }
-
-    rock.position.y = radius/10-1/4;
-    rock.rotateY(-Math.PI/3 * this.getDirection(direction));
-    tile.add(rock);
-    if(value>1){
-
-    }
-    if(value>2){
-
+      rock.position.x += height/2 + 1.3 * height*value;
+    }else if(rock.position.x>0){
+      rock.position.x -= height/2 + 1.3 * height*value;
     }
     return tile;
   };
-
-  addPathStone = (tile, direction, value, radius) => {
-
-  }
 }

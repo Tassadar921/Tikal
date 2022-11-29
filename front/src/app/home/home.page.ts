@@ -111,6 +111,7 @@ export class HomePage implements AfterViewInit {
   };
 
   setDraggableEvents = (lines: number, col: number, radius: number, cooBeforeDrag: { x: any; y: any; z?: number; }) => {
+    console.log('setDraggableEvents');
     //fires when dragging starts
     this.dragControls.addEventListener('dragstart', (e) => {
       //disable OrbitControls, if we don't it's total chaos
