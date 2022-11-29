@@ -5,7 +5,6 @@ import {InitializationService} from '../shared/services/initialization.service';
 import {GenerateHexagonService} from '../shared/services/generate-hexagon.service';
 import {ApiService} from '../shared/services/api.service';
 import {GameService} from '../shared/services/game.service';
-import {Camera} from 'three';
 
 @Component({
   selector: 'app-home',
@@ -101,11 +100,13 @@ export class HomePage implements AfterViewInit {
     this.draggableObjects = rtrn.draggableObjects;
     this.plane = rtrn.plane;
     this.matrix = rtrn.matrix;
-    if (draggable && this.camera instanceof Camera) {
+    if (draggable) {
+      console.log(rtrn.cylinder.userData.tile.directions);
       this.dragControls = new DragControls(this.draggableObjects, this.camera, this.renderer.domElement);
       this.dragControls.transformGroup = true;
       this.setDraggableEvents(lines, col, radius, cooBeforeDrag);
-      this.draggableObjects[0] = this.generateHexagonService.addTree(rtrn.cylinder);
+      rtrn.cylinder = this.generateHexagonService.addPath(rtrn.cylinder, radius);
+      // this.draggableObjects[0] = this.generateHexagonService.addTree(rtrn.cylinder);
     }
   };
 
@@ -168,7 +169,7 @@ export class HomePage implements AfterViewInit {
       //piece rotation on key press 'r'
       document.body.removeEventListener('keydown', (input) => {
         if (input.key.toLowerCase() === 'r') {
-          e.object = this.generateHexagonService.rotate(e['object']);
+          e.object = this.generateHexagonService.rotate(e.object);
         }
       });
 
@@ -193,11 +194,11 @@ export class HomePage implements AfterViewInit {
       //saving its property id in id
       for (let i = 0; i < intersects.length; i++) {
         if (intersects[i].object.userData && !intersects[i].object.userData.draggable
-          && intersects[i].object.geometry.type === 'CylinderGeometry') {
+          && Object(intersects[i].object).geometry.type === 'CylinderGeometry') {
           id = intersects[i].object.id;
           i = intersects.length;
           //saving the object we're looking for
-          const object = this.matrix[this.plane.getObjectById(id).userData['x']][this.plane.getObjectById(id).userData['y']];
+          const object = this.matrix[this.plane.getObjectById(id).userData.x][this.plane.getObjectById(id).userData.y];
 
           //check the 4 hexagons on the sides to see if they contain a piece or if empty
           for (const x0 of [object.userData.x - 1, object.userData.x + 1]) {

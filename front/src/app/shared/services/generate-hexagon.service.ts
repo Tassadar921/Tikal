@@ -8,7 +8,8 @@ import {GameService} from './game.service';
 })
 export class GenerateHexagonService {
 
-  public cooPoints = [];
+  private cooSommets = [];
+  private cooMiddleSides = [];
 
   private modelLoader = new GLTFLoader();
 
@@ -19,7 +20,7 @@ export class GenerateHexagonService {
 
   initCooPoints = (radius) => {
     const h = Math.sqrt(3) / 2 * radius;
-    this.cooPoints = [
+    this.cooSommets = [
       {x:h, y:radius/2},
       {x:0, y:radius},
       {x:-h, y:radius/2},
@@ -27,7 +28,34 @@ export class GenerateHexagonService {
       {x:0, y:-radius},
       {x:h, y:-radius/2},
     ];
+
+    this.cooMiddleSides = [
+      {x:0, y:-h},
+      {x:-3/4*radius, y:-h/2},
+      {x:-3/4*radius, y:h/2},
+      {x:0, y:h},
+      {x:3/4*radius, y:h/2},
+      {x:3/4*radius, y:-h/2},
+    ]
   };
+
+  getDirection = (direction) => {
+    switch(direction) {
+      case 'north':
+        return 0;
+      case 'northEast':
+        return 1;
+      case 'southEast':
+        return 2;
+      case 'south':
+        return 3;
+      case 'southWest':
+        return 4;
+      case 'northWest':
+        return 5;
+    }
+    return 0;
+  }
 
   generateHexagon = (x, y, matrix, draggableObjects, lines, col, radius, plane, draggable = true) => {
     //calculating scene xy of cylinder from matrix's xy
@@ -83,7 +111,7 @@ export class GenerateHexagonService {
       };
 
       if (x === 0 && y === 0) {//starting hexagon, special texture and visible
-        cylinder.userData['piecePlaced'] = true;
+        cylinder.userData.piecePlaced = true;
         cylinder.children = [];
         cylinder.visible = true;
         cylinder.material[0] = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/dirt.png')});
@@ -114,7 +142,7 @@ export class GenerateHexagonService {
   };
 
   addTree = (tile) => {
-    for(const coo of this.cooPoints) {
+    for(const coo of this.cooSommets) {
       const num = Math.ceil(Math.random() * 5);
       this.modelLoader.load('./assets/3Dmodels/arbre' + num + '.gltf', (gltf) => {
         if (num === 2 || num === 3) {
@@ -149,4 +177,50 @@ export class GenerateHexagonService {
     tile.userData.tile.directions.northEast = tmp;
     return tile;
   };
+
+  addPath = (tile, radius) => {
+    for(const direction in tile.userData.tile.directions){
+      if(tile.userData.tile.directions[direction]){
+        tile = this.drawPath(tile, direction, tile.userData.tile.directions[direction], radius);
+      }
+    }
+    return tile;
+  };
+
+  drawPath = (tile, direction, value, radius) => {
+    const width = 1.5;
+    const height = 1;
+    const geometry = new THREE.BoxGeometry( height, 1, width );
+    const material = new THREE.MeshBasicMaterial( {color: 0xFF5733} );
+    const rock = new THREE.Mesh( geometry, material );
+
+    rock.position.z = this.cooMiddleSides[this.getDirection(direction)].x;
+    rock.position.x = this.cooMiddleSides[this.getDirection(direction)].y;
+
+    if(rock.position.z<0){
+      rock.position.z += height/2;
+    }else{
+      rock.position.z -= height/2;
+    }
+    if(rock.position.x<0){
+      rock.position.x += height/2;
+    }else{
+      rock.position.x -= height/2;
+    }
+
+    rock.position.y = radius/10-1/4;
+    rock.rotateY(-Math.PI/3 * this.getDirection(direction));
+    tile.add(rock);
+    if(value>1){
+
+    }
+    if(value>2){
+
+    }
+    return tile;
+  };
+
+  addPathStone = (tile, direction, value, radius) => {
+
+  }
 }
