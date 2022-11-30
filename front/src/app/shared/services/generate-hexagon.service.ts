@@ -216,8 +216,6 @@ export class GenerateHexagonService {
     }else if(rock.position.x>0){
       rock.position.x -= height/2 + 1.3 * height*value;
     }
-    console.log(tile.position);
-    console.log(rock.position);
 
     const initX = tile.position.x;
     const initY = tile.position.y;

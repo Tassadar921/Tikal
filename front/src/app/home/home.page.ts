@@ -97,6 +97,7 @@ export class HomePage implements AfterViewInit {
         this.draggableObjects[0] = this.generateHexagonService.rotate(this.draggableObjects[0]);
       }
     });
+    console.log(this.matrix);
     setInterval(this.animate, 1000 / fps);
   }
 
@@ -112,7 +113,7 @@ export class HomePage implements AfterViewInit {
       this.dragControls.transformGroup = true;
       this.setDraggableEvents(lines, col, radius, cooBeforeDrag);
       rtrn.cylinder = this.generateHexagonService.addPath(rtrn.cylinder, radius);
-      this.draggableObjects[0] = this.generateHexagonService.addTree(rtrn.cylinder);
+      // this.draggableObjects[0] = this.generateHexagonService.addTree(rtrn.cylinder);
     }
   };
 
@@ -169,85 +170,27 @@ export class HomePage implements AfterViewInit {
       //put the object on the plane
       e.object.position.z = 0;
 
-      //used for each checking, very important
-      let validPlacement = false;
-
-      //casts an infinite line between the pointer and the camera
       this.raycaster.setFromCamera(this.pointer, this.camera);
-
-      //array of each object in collision with the raycast
       const intersects = this.raycaster.intersectObjects(this.scene.children);
 
-      //saves id data of the object we're looking for just after
-      let id = 0;
+      let validPlacement = false;
+      let droppedArea;
 
-      //looking in intersects for an object with userData.draggable=false => corresponds to hexagons of placement grid
-      //placed hexagons have no longer children
-      //saving its property id in id
-      for (let i = 0; i < intersects.length; i++) {
-        if (intersects[i].object.userData && !intersects[i].object.userData.draggable
-          && Object(intersects[i].object).geometry.type === 'CylinderGeometry') {
-          id = intersects[i].object.id;
-          i = intersects.length;
-          //saving the object we're looking for
-          const object = this.matrix[this.plane.getObjectById(id).userData.x][this.plane.getObjectById(id).userData.y];
-
-          //check the 4 hexagons on the sides to see if they contain a piece or if empty
-          for (const x0 of [object.userData.x - 1, object.userData.x + 1]) {
-            for (const y0 of [object.userData.y - 1, object.userData.y + 1]) {
-              if (x0 > -1 && x0 < this.matrix.length && y0 > -1 && y0 < this.matrix[0].length) { //if index isn't valid, skip
-                if (this.matrix[x0][y0].userData.piecePlaced) { //toggle validPlacement if a piece is placed on neighbors
-                  validPlacement = true;
-                }
-              }
-            }
-          }
-
-          //idem here with pieces above and under, checking if one isn't empty
-          for (const x0 of [object.userData.x - 2, object.userData.x, object.userData.x + 2]) {
-            if (x0 > -1 && x0 < this.matrix.length) { //if index isn't valid, skip
-              if (this.matrix[x0][object.userData.y].userData.piecePlaced) { //toggle validPlacement if a piece is placed on neighbors
-                validPlacement = true;
-              }
-            }
-          }
-          //if a placed neighbor piece on the board if present
-          if (validPlacement) {
-            //children borders become useless, we delete it
-            //next we set our dropped hexagon's sprites, copying dragged hexagon's ones
-            //then copying its rotation
-            object.userData.piecePlaced = true;
-            object.userData.tile = e.object.userData.tile;
-            object.children = e.object.children;
-            //children placement in function of dropped tile and dropping area
-            // for(const child of object.children){
-            //   // child.position.x-=(object.position.y- e.object.position.y);
-            //   // child.position.z-=(object.position.x- e.object.position.x);
-            //   child.position.y-=radius/2;
-            //   child.position.x = 0;
-            //   child.position.z = 0;
-            // }
-            object.material = e.object.material;
-            object.rotation.x = e.object.rotation.x;
-            object.rotation.y = e.object.rotation.y;
-            object.rotation.z = e.object.rotation.z;
-            //finally deleting the dragged object from draggableObjects and from the plane
-            this.plane.remove(e.object);
-            this.draggableObjects = [];
-            //dev tool : initiates a new hexagon at the same place
-            this.generateHexagon(5, -2, this.matrix, this.draggableObjects, lines, col, radius, this.plane, cooBeforeDrag, true);
-            for(const child of object.children){
-              child.position.y-=radius/2;
-              child.position.x = child.userData.x;
-              child.position.z = child.userData.z;
-            }
-          }
+      for(const child of intersects){
+        if(Object(child.object).geometry.type==='CylinderGeometry'
+          && !child.object.userData.draggable
+          && !child.object.userData.piecePlaced){
+          droppedArea = child.object;
         }
       }
-      if (!validPlacement) { //if droppable area isn't found, reinitialize coo of dragged object
+
+      if(validPlacement){
+
+      }else{
         e.object.position.x = cooBeforeDrag.x;
         e.object.position.y = cooBeforeDrag.y;
       }
+
 
       for (const obj of this.plane.children) { //hide placement grid
         if (!obj.userData.draggable && obj.geometry.type === 'CylinderGeometry' && !obj.userData.piecePlaced) {
