@@ -167,7 +167,6 @@ export class GenerateHexagonService {
 
   //rotates the tile's texture + paths' directions in userData.tile
   rotate = (tile) => {
-    console.log('rotate');
     tile.rotateY(-Math.PI / 3);
     const tmp = tile.userData.tile.directions.north;
     tile.userData.tile.directions.north = tile.userData.tile.directions.northWest;

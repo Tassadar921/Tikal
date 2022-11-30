@@ -91,6 +91,12 @@ export class HomePage implements AfterViewInit {
       this.pointer.y = -(e.clientY / this.renderer.domElement.height) * 2 + 1;
     });
 
+    //enable clockwise rotation on key press 'r'
+    document.body.addEventListener('keydown', (input) => {
+      if (input.key.toLowerCase() === 'r') {
+        this.draggableObjects[0] = this.generateHexagonService.rotate(this.draggableObjects[0]);
+      }
+    });
     setInterval(this.animate, 1000 / fps);
   }
 
@@ -106,12 +112,11 @@ export class HomePage implements AfterViewInit {
       this.dragControls.transformGroup = true;
       this.setDraggableEvents(lines, col, radius, cooBeforeDrag);
       rtrn.cylinder = this.generateHexagonService.addPath(rtrn.cylinder, radius);
-      // this.draggableObjects[0] = this.generateHexagonService.addTree(rtrn.cylinder);
+      this.draggableObjects[0] = this.generateHexagonService.addTree(rtrn.cylinder);
     }
   };
 
   setDraggableEvents = (lines: number, col: number, radius: number, cooBeforeDrag: { x: any; y: any; z?: number; }) => {
-    console.log('setDraggableEvents');
     //fires when dragging starts
     this.dragControls.addEventListener('dragstart', (e) => {
       //disable OrbitControls, if we don't it's total chaos
@@ -130,13 +135,6 @@ export class HomePage implements AfterViewInit {
           object.visible = true;
         }
       }
-
-      //enable clockwise rotation on key press 'r'
-      document.body.addEventListener('keydown', (input) => {
-        if (input.key.toLowerCase() === 'r') {
-          e.object = this.generateHexagonService.rotate(e.object);
-        }
-      });
     });
     //fires each time dragging object moves
     this.dragControls.addEventListener('drag', (e) => {
@@ -166,13 +164,6 @@ export class HomePage implements AfterViewInit {
       //re-enable OrbitControls
 
       this.controls.enabled = true;
-
-      //piece rotation on key press 'r'
-      document.body.removeEventListener('keydown', (input) => {
-        if (input.key.toLowerCase() === 'r') {
-          e.object = this.generateHexagonService.rotate(e.object);
-        }
-      });
 
       //put the object on the plane
       //put the object on the plane
