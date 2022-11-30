@@ -220,24 +220,26 @@ export class HomePage implements AfterViewInit {
             object.userData.tile = e.object.userData.tile;
             object.children = e.object.children;
             //children placement in function of dropped tile and dropping area
-            for(const child of object.children){
-              child.position.x-=(object.position.y- e.object.position.y);
-              child.position.z-=(object.position.x- e.object.position.x);
-              child.position.y-=radius/2;
-            }
+            // for(const child of object.children){
+            //   // child.position.x-=(object.position.y- e.object.position.y);
+            //   // child.position.z-=(object.position.x- e.object.position.x);
+            //   child.position.y-=radius/2;
+            //   child.position.x = 0;
+            //   child.position.z = 0;
+            // }
             object.material = e.object.material;
             object.rotation.x = e.object.rotation.x;
             object.rotation.y = e.object.rotation.y;
             object.rotation.z = e.object.rotation.z;
             //finally deleting the dragged object from draggableObjects and from the plane
             this.plane.remove(e.object);
-            for (let m = 0; m < this.draggableObjects.length; m++) {
-              if (this.draggableObjects[m] === e.object) {
-                this.draggableObjects.splice(m, 1);
-                m = this.draggableObjects.length;
-                //dev tool : initiates a new hexagon at the same place
-                this.generateHexagon(5, -2, this.matrix, this.draggableObjects, lines, col, radius, this.plane, cooBeforeDrag, true);
-              }
+            this.draggableObjects = [];
+            //dev tool : initiates a new hexagon at the same place
+            this.generateHexagon(5, -2, this.matrix, this.draggableObjects, lines, col, radius, this.plane, cooBeforeDrag, true);
+            for(const child of object.children){
+              child.position.y-=radius/2;
+              child.position.x = child.userData.x;
+              child.position.z = child.userData.z;
             }
           }
         }

@@ -158,7 +158,7 @@ export class GenerateHexagonService {
         gltf.scene.position.z += coo.y;
 
         gltf.scene.rotateY(Math.random()*Math.PI);
-        gltf.scene.userData = {x:gltf.scene.position.x-initX, y:gltf.scene.position.z-initY};
+        gltf.scene.userData = {x:gltf.scene.position.x-initX, z:gltf.scene.position.z-initY};
         tile.add(gltf.scene);
       });
     }
@@ -206,7 +206,6 @@ export class GenerateHexagonService {
 
     rock.position.y = radius/10-1/4;
     rock.rotateY(-Math.PI/3 * this.getDirection(direction)%3);
-    tile.add(rock);
     if(rock.position.z<0){
       rock.position.z += height/2 + 1.3 * height*value;
     }else if(rock.position.z>0){
@@ -217,6 +216,14 @@ export class GenerateHexagonService {
     }else if(rock.position.x>0){
       rock.position.x -= height/2 + 1.3 * height*value;
     }
+    console.log(tile.position);
+    console.log(rock.position);
+
+    const initX = tile.position.x;
+    const initY = tile.position.y;
+
+    rock.userData = {x:rock.position.x, z:rock.position.z};
+    tile.add(rock);
     return tile;
   };
 }
