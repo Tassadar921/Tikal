@@ -126,6 +126,10 @@ export class HomePage implements AfterViewInit {
       //disable OrbitControls, if we don't it's total chaos
       this.controls.enabled = false;
 
+      for(const child of e.object.children){
+        console.log(child.position);
+      }
+
       //making the piece beeing above the board
       e.object.position.z = radius / 2;
 
@@ -203,10 +207,12 @@ export class HomePage implements AfterViewInit {
           || ((x<lines-1 && y>0)&&(this.matrix[x+1][y-1].userData.piecePlaced && (this.matrix[x+1][y-1].userData.tile.directions.northEast || e.object.userData.tile.directions.southWest)))
           || ((x>0 && y>0)&&(this.matrix[x-1][y-1].userData.piecePlaced && (this.matrix[x-1][y-1].userData.tile.directions.southEast || e.object.userData.tile.directions.northWest)))
           || ((x>1)&&(this.matrix[x-2][y].userData.piecePlaced && (this.matrix[x-2][y].userData.tile.directions.south || e.object.userData.tile.directions.north)))){
-          droppedArea.children = e.object.children;
           droppedArea.userData.tile = e.object.userData.tile;
           droppedArea.material = e.object.material;
           droppedArea.userData.piecePlaced = true;
+          droppedArea.children = [];
+          droppedArea = this.generateHexagonService.addPath(droppedArea, radius);
+          droppedArea = this.generateHexagonService.addTree(droppedArea);
           this.plane.remove(e.object);
           this.draggableObjects = [];
           this.generateHexagon(5, -2, this.matrix, this.draggableObjects, lines, col, radius, this.plane, cooBeforeDrag, true);

@@ -119,7 +119,7 @@ export class GenerateHexagonService {
         cylinder.material[1] = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/herbe.png')});
         cylinder.material[2] = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/back.png')});
         cylinder = this.addPath(cylinder, radius);
-        // cylinder = this.addTree(cylinder);
+        cylinder = this.addTree(cylinder);
       } else {
         cylinder.visible = false;
       }
