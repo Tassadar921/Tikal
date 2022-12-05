@@ -126,9 +126,8 @@ export class HomePage implements AfterViewInit {
       //disable OrbitControls, if we don't it's total chaos
       this.controls.enabled = false;
 
-      for(const child of e.object.children){
-        console.log(child.position);
-      }
+      console.log('dragstart');
+      console.log(this.draggableObjects);
 
       //making the piece beeing above the board
       e.object.position.z = radius / 2;
@@ -178,7 +177,6 @@ export class HomePage implements AfterViewInit {
 
       this.controls.enabled = true;
 
-      //put the object on the plane
       //put the object on the plane
       e.object.position.z = 0;
 
@@ -234,7 +232,7 @@ export class HomePage implements AfterViewInit {
   };
 
   animate = () => { //loop allowing graphics to be updated
-    this.controls.update();
+    // this.controls.update();
     this.renderer.render(this.scene, this.camera);
   };
 }
