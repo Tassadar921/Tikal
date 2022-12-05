@@ -15,6 +15,12 @@ export class GameService {
   //api request to get tiles list
   initTilesToPlace = async () => this.tilesToPlace = await this.apiService.getTilesList();
 
+  getFirstTile = () => {
+    let rtrn = this.tilesToPlace[this.tilesToPlace.length-1].data[0];
+    this.tilesToPlace.splice(this.tilesToPlace.length-1, 1);
+    return rtrn;
+  }
+
   //chooses a tile at random in the current letter, then delete it from tilesToPlace
   getTile = () => {
     const rtrn = this.getRandomTileToPlace();

@@ -30,12 +30,12 @@ export class GenerateHexagonService {
     ];
 
     this.cooMiddleSides = [
-      {x:0, y:-h+radius/40},
-      {x:-3/4*radius, y:-h/2},
-      {x:-3/4*radius, y:h/2},
-      {x:0, y:h-radius/40},
-      {x:3/4*radius, y:h/2},
-      {x:3/4*radius, y:-h/2},
+      {z:0, x:-h+radius/40},
+      {z:-3/4*radius, x:-h/2},
+      {z:-3/4*radius, x:h/2},
+      {z:0, x:h-radius/40},
+      {z:3/4*radius, x:h/2},
+      {z:3/4*radius, x:-h/2},
     ]
   };
 
@@ -112,12 +112,14 @@ export class GenerateHexagonService {
 
       if (x === 0 && y === 0) {//starting hexagon, special texture and visible
         cylinder.userData.piecePlaced = true;
+        cylinder.userData.tile = this.gameService.getFirstTile();
         cylinder.children = [];
         cylinder.visible = true;
         cylinder.material[0] = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/dirt.png')});
         cylinder.material[1] = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/herbe.png')});
         cylinder.material[2] = new THREE.MeshBasicMaterial({map: new THREE.TextureLoader().load('./assets/back.png')});
-        cylinder = this.addTree(cylinder);
+        cylinder = this.addPath(cylinder, radius);
+        // cylinder = this.addTree(cylinder);
       } else {
         cylinder.visible = false;
       }
@@ -201,24 +203,18 @@ export class GenerateHexagonService {
     const material = new THREE.MeshBasicMaterial( {map: new THREE.TextureLoader().load('./assets/pathTexture.jpg')} );
     const rock = new THREE.Mesh( geometry, material );
 
-    rock.position.z = this.cooMiddleSides[this.getDirection(direction)].x;
-    rock.position.x = this.cooMiddleSides[this.getDirection(direction)].y;
+    rock.position.z = this.cooMiddleSides[this.getDirection(direction)].z;
+    rock.position.x = this.cooMiddleSides[this.getDirection(direction)].x;
 
-    rock.position.y = radius/10-1/4;
+    rock.position.y = radius/10-height/4;
     rock.rotateY(-Math.PI/3 * this.getDirection(direction)%3);
-    if(rock.position.z<0){
-      rock.position.z += height/2 + 1.3 * height*value;
-    }else if(rock.position.z>0){
-      rock.position.z -= height/2 + 1.3 * height*value;
-    }
-    if(rock.position.x<0){
-      rock.position.x += height/2 + 1.3 * height*value;
-    }else if(rock.position.x>0){
-      rock.position.x -= height/2 + 1.3 * height*value;
-    }
 
-    const initX = tile.position.x;
-    const initY = tile.position.y;
+    rock.position.z += Number(rock.position.z!==0)
+      * Math.pow(-1, Number(rock.position.z>0))
+      * (height/2 + 1.3 * height*value);
+    rock.position.x += Number(rock.position.x!==0)
+      * Math.pow(-1, Number(rock.position.x>0))
+      * (height/2 + 1.3 * height*value);
 
     rock.userData = {x:rock.position.x, z:rock.position.z};
     tile.add(rock);

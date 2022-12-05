@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, ElementRef, Input, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, ViewChild} from '@angular/core';
 import * as THREE from 'three'
 import {DragControls} from 'three/examples/jsm/controls/DragControls';
 import {InitializationService} from '../shared/services/initialization.service';
@@ -97,7 +97,10 @@ export class HomePage implements AfterViewInit {
         this.draggableObjects[0] = this.generateHexagonService.rotate(this.draggableObjects[0]);
       }
     });
-    console.log(this.matrix);
+
+    // console.log(this.matrix[0][0].userData);
+    // console.log(this.draggableObjects[0].userData);
+
     setInterval(this.animate, 1000 / fps);
   }
 
@@ -117,7 +120,7 @@ export class HomePage implements AfterViewInit {
     }
   };
 
-  setDraggableEvents = (lines: number, col: number, radius: number, cooBeforeDrag: { x: any; y: any; z?: number; }) => {
+  setDraggableEvents = (lines, col, radius, cooBeforeDrag) => {
     //fires when dragging starts
     this.dragControls.addEventListener('dragstart', (e) => {
       //disable OrbitControls, if we don't it's total chaos
@@ -164,6 +167,11 @@ export class HomePage implements AfterViewInit {
     this.dragControls.addEventListener('dragend', (e) => {
       //re-enable OrbitControls
 
+      let reset = () => {
+        e.object.position.x = cooBeforeDrag.x;
+        e.object.position.y = cooBeforeDrag.y;
+      };
+
       this.controls.enabled = true;
 
       //put the object on the plane
@@ -172,8 +180,6 @@ export class HomePage implements AfterViewInit {
 
       this.raycaster.setFromCamera(this.pointer, this.camera);
       const intersects = this.raycaster.intersectObjects(this.scene.children);
-
-      let validPlacement = false;
       let droppedArea;
 
       for(const child of intersects){
@@ -181,14 +187,35 @@ export class HomePage implements AfterViewInit {
           && !child.object.userData.draggable
           && !child.object.userData.piecePlaced){
           droppedArea = child.object;
+          break;
         }
       }
 
-      if(validPlacement){
+      if(droppedArea){
+        let x = droppedArea.userData.x;
+        let y = droppedArea.userData.y;
 
+        console.log('x: ' + x + ' y: ' + y);
+
+        if(((x>0 && y<col-1)&&(this.matrix[x-1][y+1].userData.piecePlaced && (this.matrix[x-1][y+1].userData.tile.directions.southWest || e.object.userData.tile.directions.northEast)))
+        || ((x<lines-1 && y<col-1)&&(this.matrix[x+1][y+1].userData.piecePlaced && (this.matrix[x+1][y+1].userData.tile.directions.northWest || e.object.userData.tile.directions.southEast)))
+          || ((x<lines-2)&&(this.matrix[x+2][y].userData.piecePlaced && (this.matrix[x+2][y].userData.tile.directions.north || e.object.userData.tile.directions.south)))
+          || ((x<lines-1 && y>0)&&(this.matrix[x+1][y-1].userData.piecePlaced && (this.matrix[x+1][y-1].userData.tile.directions.northEast || e.object.userData.tile.directions.southWest)))
+          || ((x>0 && y>0)&&(this.matrix[x-1][y-1].userData.piecePlaced && (this.matrix[x-1][y-1].userData.tile.directions.southEast || e.object.userData.tile.directions.northWest)))
+          || ((x>1)&&(this.matrix[x-2][y].userData.piecePlaced && (this.matrix[x-2][y].userData.tile.directions.south || e.object.userData.tile.directions.north)))){
+          droppedArea.children = e.object.children;
+          droppedArea.userData.tile = e.object.userData.tile;
+          droppedArea.material = e.object.material;
+          droppedArea.userData.piecePlaced = true;
+          this.plane.remove(e.object);
+          this.draggableObjects = [];
+          this.generateHexagon(5, -2, this.matrix, this.draggableObjects, lines, col, radius, this.plane, cooBeforeDrag, true);
+          // this.dragControls.deactivate();
+        }else{
+          reset();
+        }
       }else{
-        e.object.position.x = cooBeforeDrag.x;
-        e.object.position.y = cooBeforeDrag.y;
+        reset();
       }
 
 

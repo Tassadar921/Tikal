@@ -501,5 +501,23 @@
         }
       }
     ]
+  },
+  {
+    "letter": "origin",
+    "data": [
+      {
+        "id": "origin",
+        "type": "plain",
+        "level": 0,
+        "directions": {
+          "north": 1,
+          "northEast": 1,
+          "southEast": 1,
+          "south": 1,
+          "southWest": 1,
+          "northWest": 1
+        }
+      }
+    ]
   }
 ]
