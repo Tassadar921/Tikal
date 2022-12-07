@@ -57,7 +57,7 @@ export class GenerateHexagonService {
     return 0;
   }
 
-  generateHexagon = (x, y, matrix, draggableObjects, lines, col, radius, plane, draggable = true) => {
+  generateHexagon = (x, y, matrix, lines, col, radius, plane, draggable = true) => {
     //calculating scene xy of cylinder from matrix's xy
     const cylinderX = x * (radius * Math.cos(2 * Math.PI) + 2 * radius);
     const cylinderY = -y * radius * Math.cos(Math.PI / 6);
@@ -135,11 +135,10 @@ export class GenerateHexagonService {
         tile: tileData
       };
       cylinder.visible = true;
-      draggableObjects = [cylinder];
       plane.add(cylinder);
     }
 
-    return {draggableObjects, plane, matrix, cylinder};
+    return {plane, matrix, cylinder};
 
   };
 

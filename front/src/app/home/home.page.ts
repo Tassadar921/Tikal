@@ -98,25 +98,20 @@ export class HomePage implements AfterViewInit {
       }
     });
 
-    // console.log(this.matrix[0][0].userData);
-    // console.log(this.draggableObjects[0].userData);
-
     setInterval(this.animate, 1000 / fps);
   }
 
   generateHexagon = (x, y, matrix, draggableObjects, lines, col, radius, plane, cooBeforeDrag, draggable) => {
     const rtrn = this.generateHexagonService.generateHexagon(
-      x, y, matrix, draggableObjects, lines, col, radius, plane, draggable);
-    this.draggableObjects = rtrn.draggableObjects;
+      x, y, matrix, lines, col, radius, plane, draggable);
+    this.draggableObjects = [rtrn.cylinder];
     this.plane = rtrn.plane;
     this.matrix = rtrn.matrix;
     if (draggable) {
-      console.log(rtrn.cylinder.userData.tile.directions);
       this.dragControls = new DragControls(this.draggableObjects, this.camera, this.renderer.domElement);
       this.dragControls.transformGroup = true;
       this.setDraggableEvents(lines, col, radius, cooBeforeDrag);
       rtrn.cylinder = this.generateHexagonService.addPath(rtrn.cylinder, radius);
-      // this.draggableObjects[0] = this.generateHexagonService.addTree(rtrn.cylinder);
     }
   };
 
@@ -213,8 +208,8 @@ export class HomePage implements AfterViewInit {
           droppedArea = this.generateHexagonService.addTree(droppedArea);
           this.plane.remove(e.object);
           this.draggableObjects = [];
+          this.dragControls.dispose();
           this.generateHexagon(5, -2, this.matrix, this.draggableObjects, lines, col, radius, this.plane, cooBeforeDrag, true);
-          // this.dragControls.deactivate();
         }else{
           reset();
         }
