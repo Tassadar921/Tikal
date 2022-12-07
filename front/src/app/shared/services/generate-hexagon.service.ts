@@ -2,6 +2,7 @@ import {Injectable} from '@angular/core';
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader';
 import {GameService} from './game.service';
+import {SimplifyModifier} from 'three/examples/jsm/modifiers/SimplifyModifier';
 
 @Injectable({
   providedIn: 'root'
@@ -145,7 +146,8 @@ export class GenerateHexagonService {
   addTree = (tile) => {
     for(const coo of this.cooSommets) {
       const num = Math.ceil(Math.random() * 5);
-      this.modelLoader.load('./assets/3Dmodels/arbre' + num + '.gltf', (gltf) => {
+      this.modelLoader.load('./assets/3Dmodels/arbre' + num + '.glb', (gltf) => {
+        //apply decimation on gltf.scene
         if (num === 2 || num === 3) {
           gltf.scene.scale.set(1+Math.random(), 1+Math.random(), 1+Math.random());
         }else{
