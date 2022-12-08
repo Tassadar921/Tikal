@@ -41,4 +41,6 @@ export class GameService {
       this.tilesToPlace.splice(0, 1);
     }
   };
+
+  
 }

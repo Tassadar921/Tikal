@@ -112,6 +112,7 @@ export class HomePage implements AfterViewInit {
       this.dragControls.transformGroup = true;
       this.setDraggableEvents(lines, col, radius, cooBeforeDrag);
       rtrn.cylinder = this.generateHexagonService.addPath(rtrn.cylinder, radius);
+      rtrn.cylinder = this.generateHexagonService.addTree(rtrn.cylinder);
     }
   };
 
@@ -120,9 +121,6 @@ export class HomePage implements AfterViewInit {
     this.dragControls.addEventListener('dragstart', (e) => {
       //disable OrbitControls, if we don't it's total chaos
       this.controls.enabled = false;
-
-      console.log('dragstart');
-      console.log(this.draggableObjects);
 
       //making the piece beeing above the board
       e.object.position.z = radius / 2;
@@ -157,7 +155,7 @@ export class HomePage implements AfterViewInit {
           e.object.position.x = intersects[i].point.x - this.scene.position.x;
           e.object.position.y = intersects[i].point.y - this.scene.position.y;
           e.object.position.z = radius / 2;
-          i = intersects.length;
+          break;
         }
       }
     });
@@ -226,8 +224,7 @@ export class HomePage implements AfterViewInit {
     });
   };
 
-  animate = () => { //loop allowing graphics to be updated
-    // this.controls.update();
+  animate = () => {
     this.renderer.render(this.scene, this.camera);
   };
 }

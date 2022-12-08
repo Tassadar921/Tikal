@@ -221,4 +221,6 @@ export class GenerateHexagonService {
     tile.add(rock);
     return tile;
   };
+
+  //add a volcano with mathematical generation on the tile and returning the tile
 }
