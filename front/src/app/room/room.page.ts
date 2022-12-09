@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import {SocketsService} from '../shared/services/sockets.service';
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'app-room',
@@ -7,9 +9,14 @@ import { Component, OnInit } from '@angular/core';
 })
 export class RoomPage implements OnInit {
 
-  constructor() { }
+  constructor(
+    private socketsService: SocketsService,
+    private router: Router
+  ) {}
 
   ngOnInit() {
+    this.socketsService.initSocket();
+    this.socketsService.setRoomSockets();
   }
 
 }

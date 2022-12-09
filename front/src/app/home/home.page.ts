@@ -6,7 +6,6 @@ import {GenerateHexagonService} from '../shared/services/generate-hexagon.servic
 import {ApiService} from '../shared/services/api.service';
 import {GameService} from '../shared/services/game.service';
 import {ToastService} from '../shared/services/toast.service';
-import {Socket} from 'ngx-socket-io';
 import {SocketsService} from '../shared/services/sockets.service';
 
 @Component({

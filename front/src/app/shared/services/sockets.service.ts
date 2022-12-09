@@ -10,8 +10,9 @@ export class SocketsService {
     private socket: Socket
   ) {}
 
+  initSocket = () => this.socket.connect();
+
   setRoomSockets = () => {
-    this.socket.connect();
     this.socket.emit('enterRoom', 'Tassadar');
   };
 }

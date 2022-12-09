@@ -69,7 +69,7 @@ app.get('/getTilesList', (req, res) => {
 });
 
 io.on('connection', (socket) => {
-    console.log('a user connected');
+    console.log(socket.id);
     socket.on('createRoom', () => {
 
     });
