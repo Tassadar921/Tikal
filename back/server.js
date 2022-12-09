@@ -3,6 +3,12 @@ const bodyParser = require('body-parser');
 const logger = require('morgan');
 const methodOverride = require('method-override');
 const cors = require('cors');
+const http = require('http').Server(app);
+const io = require('socket.io')(http, {
+    cors: {
+        origins: ['http://localhost:8100']
+    }
+});
 
 const allowedOrigins = 'http://localhost:8100';
 
@@ -62,9 +68,21 @@ app.get('/getTilesList', (req, res) => {
     gameInit.getTilesList(res);
 });
 
+io.on('connection', (socket) => {
+    console.log('a user connected');
+    socket.on('createRoom', () => {
 
+    });
 
+    socket.on('join', (id) => {
+        console.log('join', id);
+    });
 
-if (app.listen(process.env.PORT || 8080)) {
+    socket.on('disconnect', () => {
+       console.log('user disconnected');
+    });
+});
+
+if (http.listen(process.env.PORT || 8080)) {
     console.log('Serveur lancé sur le port 8080');
 }

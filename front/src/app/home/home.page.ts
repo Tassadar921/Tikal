@@ -5,6 +5,9 @@ import {InitializationService} from '../shared/services/initialization.service';
 import {GenerateHexagonService} from '../shared/services/generate-hexagon.service';
 import {ApiService} from '../shared/services/api.service';
 import {GameService} from '../shared/services/game.service';
+import {ToastService} from '../shared/services/toast.service';
+import {Socket} from 'ngx-socket-io';
+import {SocketsService} from '../shared/services/sockets.service';
 
 @Component({
   selector: 'app-home',
@@ -35,9 +38,12 @@ export class HomePage implements AfterViewInit {
     private generateHexagonService: GenerateHexagonService,
     private apiService: ApiService,
     private gameService: GameService,
+    private toastService: ToastService,
+    private socketsService: SocketsService
   ) {}
 
   async ngAfterViewInit() {
+    this.socketsService.setRoomSockets();
     //col and lines of the board, radius of hexagons
     const lines = 8;
     const col = 10;
@@ -160,7 +166,7 @@ export class HomePage implements AfterViewInit {
       }
     });
     //fires when dragging ends
-    this.dragControls.addEventListener('dragend', (e) => {
+    this.dragControls.addEventListener('dragend', async (e) => {
       //re-enable OrbitControls
 
       let reset = () => {
@@ -209,16 +215,18 @@ export class HomePage implements AfterViewInit {
           this.dragControls.dispose();
           this.generateHexagon(5, -2, this.matrix, this.draggableObjects, lines, col, radius, this.plane, cooBeforeDrag, true);
         }else{
+          await this.toastService.displayToast('Paths must match', 3000, 'bottom');
           reset();
         }
       }else{
+        await this.toastService.displayToast('Invalid  placement', 3000, 'bottom');
         reset();
       }
 
 
-      for (const obj of this.plane.children) { //hide placement grid
-        if (!obj.userData.draggable && obj.geometry.type === 'CylinderGeometry' && !obj.userData.piecePlaced) {
-          obj.visible = false;
+      for (const child of this.plane.children) { //hide placement grid
+        if (!child.userData.draggable && child.geometry.type === 'CylinderGeometry' && !child.userData.piecePlaced) {
+          child.visible = false;
         }
       }
     });
