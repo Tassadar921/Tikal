@@ -1,3 +1,24 @@
-<p>
-  waiting works!
-</p>
+<ion-grid>
+  <ion-row>
+    <ion-col>
+      <ion-row id="id" (click)="copyID()">
+        <ion-col>
+          <h1>{{socketsService.roomID}}</h1>
+        </ion-col>
+        <ion-col size="1">
+          <ion-button color="clear" style="margin-top:10px;">
+            <ion-icon name="copy" slot="icon-only" color="medium"></ion-icon>
+          </ion-button>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col>
+          players list
+        </ion-col>
+      </ion-row>
+    </ion-col>
+    <ion-col size="3">
+      DLC
+    </ion-col>
+  </ion-row>
+</ion-grid>

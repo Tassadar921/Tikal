@@ -6,6 +6,8 @@ import {Socket} from 'ngx-socket-io';
 })
 export class SocketsService {
 
+  public roomID;
+
   constructor(
     private socket: Socket
   ) {}
@@ -13,6 +15,9 @@ export class SocketsService {
   initSocket = () => this.socket.connect();
 
   setRoomSockets = () => {
-    this.socket.emit('enterRoom', 'Tassadar');
+    this.socket.on('roomCreated', (roomID) => {
+      this.roomID = roomID;
+    });
+    this.socket.emit('createRoom');
   };
 }

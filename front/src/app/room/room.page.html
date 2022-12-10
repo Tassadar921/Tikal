@@ -1,12 +1,29 @@
 <ion-grid>
-  <ion-row>
-    <ion-col>
-      <ion-button color="secondary" shape="round">Create room</ion-button>
-    </ion-col>
-  </ion-row>
-  <ion-row>
-    <ion-col>
-      <ion-input maxlength="7"></ion-input>
-    </ion-col>
-  </ion-row>
+  <div *ngIf="!nickname" style="margin-top:200px">
+    <ion-row>
+      <ion-col>
+        <ion-input placeholder="Nickname" id="nickname"></ion-input>
+      </ion-col>
+    </ion-row>
+  </div>
+  <div *ngIf="!inARoom && nickname" style="margin-top:200px">
+    <ion-row>
+      <ion-col>
+        <ion-button color="secondary" shape="round" size="large" (click)="toggleInARoom()">Create room</ion-button>
+      </ion-col>
+    </ion-row>
+    <ion-row style="margin-top:100px;">
+      <ion-col>
+        <ion-title>Join a room :</ion-title>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <ion-input maxlength="20" placeholder="Room ID" id="roomID"></ion-input>
+      </ion-col>
+    </ion-row>
+  </div>
+  <div *ngIf="inARoom && nickname">
+    <app-waiting></app-waiting>
+  </div>
 </ion-grid>

@@ -9,6 +9,9 @@ import {Router} from '@angular/router';
 })
 export class RoomPage implements OnInit {
 
+  public inARoom = false;
+  public nickname = '';
+
   constructor(
     private socketsService: SocketsService,
     private router: Router
@@ -17,6 +20,10 @@ export class RoomPage implements OnInit {
   ngOnInit() {
     this.socketsService.initSocket();
     this.socketsService.setRoomSockets();
+  }
+
+  toggleInARoom() {
+    this.inARoom = !this.inARoom;
   }
 
 }
