@@ -1,12 +1,5 @@
 <ion-grid>
-  <div *ngIf="!nickname" style="margin-top:200px">
-    <ion-row>
-      <ion-col>
-        <ion-input placeholder="Nickname" id="nickname"></ion-input>
-      </ion-col>
-    </ion-row>
-  </div>
-  <div *ngIf="!inARoom && nickname" style="margin-top:200px">
+  <div *ngIf="!inARoom" style="margin-top:200px">
     <ion-row>
       <ion-col>
         <ion-button color="secondary" shape="round" size="large" (click)="toggleInARoom()">Create room</ion-button>
@@ -23,7 +16,7 @@
       </ion-col>
     </ion-row>
   </div>
-  <div *ngIf="inARoom && nickname">
+  <div *ngIf="inARoom">
     <app-waiting></app-waiting>
   </div>
 </ion-grid>

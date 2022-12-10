@@ -7,31 +7,33 @@ import {CookiesService} from './cookies.service';
 })
 export class TranslationService {
 
-  public dictionnary;
+  public dictionary;
 
   public languages = [];
 
   constructor(
-    private api: ApiService,
-    private cookies: CookiesService
+    private apiService: ApiService,
+    private cookiesService: CookiesService
   ) {}
 
-  //changes language cookie for language param (id), and changes dictionnary for the new language
+  //changes language cookie for language param (id), and changes dictionary for the new language
   updateLanguage = async (language) => {
-    await this.cookies.setCookie('language', language);
-    this.languages = Object(await this.api.getLanguagesList()).list;
-    this.initDictionnary(Object(await this.api.getTranslation(await this.cookies.getFromCookies('language'))));
-    console.log(this.languages);
+    console.log(language);
+    await this.cookiesService.setCookie('language', language);
+    this.languages = Object(await this.apiService.getLanguagesList()).list;
+    this.initDictionary(Object(await this.apiService.getTranslation(
+      await this.cookiesService.getFromCookies('language')
+    )));
   };
 
-  //replacing dictionnary by languageDictionnery param
-  initDictionnary = (languageDictionnary) => this.dictionnary = Object(languageDictionnary);
+  //replacing dictionary by languageDictionary param
+  initDictionary = (languageDictionary) => this.dictionary = Object(languageDictionary);
 
-  //initialisation of dictionnary from the cookies
+  //initialisation of dictionary from the cookies
   triggerOnLoad = async () => {
-    if(!await this.cookies.getFromCookies('language')){
-      await this.cookies.setCookie('language','uk');
+    if(!await this.cookiesService.getFromCookies('language')){
+      await this.cookiesService.setCookie('language','uk');
     }
-    await this.updateLanguage(await this.cookies.getFromCookies('language'));
+    await this.updateLanguage(await this.cookiesService.getFromCookies('language'));
   };
 }

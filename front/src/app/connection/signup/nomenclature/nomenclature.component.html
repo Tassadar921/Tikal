@@ -1,0 +1,118 @@
+<ion-grid>
+  <ion-row>
+    <ion-list-header color="light">
+      <strong>{{translationService.dictionary ? translationService.dictionary.account[4].data : ''}}</strong>
+    </ion-list-header>
+  </ion-row>
+  <ion-row>
+    <ion-text>
+      <ion-icon name="radio-button-on-outline"></ion-icon>
+      {{translationService.dictionary ? translationService.dictionary.nomenclature[1].data : ''}}: 7
+    </ion-text>
+  </ion-row>
+  <ion-row>
+    <ion-text>
+      <ion-icon name="radio-button-on-outline"></ion-icon>
+      {{translationService.dictionary ? translationService.dictionary.nomenclature[2].data : ''}}: 20
+    </ion-text>
+  </ion-row>
+  <ion-row>
+    <ion-text>
+      <ion-icon name="radio-button-on-outline"></ion-icon>
+      {{translationService.dictionary ? translationService.dictionary.nomenclature[3].data : ''}}
+      : {{checkingService.letters}}
+    </ion-text>
+  </ion-row>
+  <ion-row>
+    <ion-text>
+      <ion-icon name="radio-button-on-outline"></ion-icon>
+      {{translationService.dictionary ? translationService.dictionary.nomenclature[4].data : ''}}
+      : {{checkingService.numbers}}
+    </ion-text>
+  </ion-row>
+  <ion-row>
+    <ion-text>
+      <ion-icon name="radio-button-on-outline"></ion-icon>
+      {{translationService.dictionary ? translationService.dictionary.nomenclature[5].data : ''}}
+      : {{checkingService.specialChars}}
+    </ion-text>
+  </ion-row>
+  <ion-list-header color="light">
+    <strong>{{translationService.dictionary ? translationService.dictionary.account[5].data : ''}}</strong>
+  </ion-list-header>
+  <ion-row>
+    <ion-text>
+      <ion-icon name="radio-button-on-outline"></ion-icon>
+      {{translationService.dictionary ? translationService.dictionary.nomenclature[1].data : ''}}: 7
+    </ion-text>
+  </ion-row>
+  <ion-row>
+    <ion-text>
+      <ion-icon name="radio-button-on-outline"></ion-icon>
+      {{translationService.dictionary ? translationService.dictionary.nomenclature[2].data : ''}}: 50
+    </ion-text>
+  </ion-row>
+  <ion-row>
+    <ion-text>
+      <ion-icon name="radio-button-on-outline"></ion-icon>
+      {{translationService.dictionary ? translationService.dictionary.nomenclature[6].data : ''}} @
+    </ion-text>
+  </ion-row>
+  <ion-list-header color="light">
+    <strong>{{translationService.dictionary ? translationService.dictionary.account[6].data : ''}}s</strong>
+  </ion-list-header>
+  <ion-row>
+    <ion-text>
+      <ion-icon name="radio-button-on-outline"></ion-icon>
+      {{translationService.dictionary ? translationService.dictionary.nomenclature[1].data : ''}}: 7
+    </ion-text>
+  </ion-row>
+  <ion-row>
+    <ion-text>
+      <ion-icon name="radio-button-on-outline"></ion-icon>
+      {{translationService.dictionary ? translationService.dictionary.nomenclature[2].data : ''}}: 30
+    </ion-text>
+  </ion-row>
+  <ion-row>
+    <ion-text>
+      <ion-icon name="radio-button-on-outline"></ion-icon>
+      {{translationService.dictionary ? translationService.dictionary.nomenclature[3].data : ''}}
+      : {{checkingService.letters}}
+    </ion-text>
+  </ion-row>
+  <ion-row>
+    <ion-text>
+      <ion-icon name="radio-button-on-outline"></ion-icon>
+      {{translationService.dictionary ? translationService.dictionary.nomenclature[4].data : ''}}
+      : {{checkingService.numbers}}
+    </ion-text>
+  </ion-row>
+  <ion-row>
+    <ion-text>
+      <ion-icon name="radio-button-on-outline"></ion-icon>
+      {{translationService.dictionary ? translationService.dictionary.nomenclature[5].data : ''}}
+      : {{checkingService.specialChars}}
+    </ion-text>
+  </ion-row>
+  <ion-row>
+    <ion-text>
+      <ion-icon name="radio-button-on-outline"></ion-icon>
+      {{translationService.dictionary ? translationService.dictionary.nomenclature[7].data : ''}}
+    </ion-text>
+  </ion-row>
+  <ion-row>
+    <ion-text>
+      <ion-icon name="radio-button-on-outline"></ion-icon>
+      {{translationService.dictionary ? translationService.dictionary.nomenclature[8].data : ''}}
+    </ion-text>
+  </ion-row>
+  <ion-row>
+    <ion-col>
+      <div style="position: fixed; left: 0; bottom: 10px; right: 0;">
+        <ion-button color="clear" shape="round" (click)="modalController.dismiss()">
+          <ion-icon name="close-circle" slot="icon-only" size="large" color="warning"></ion-icon>
+        </ion-button>
+      </div>
+    </ion-col>
+  </ion-row>
+</ion-grid>

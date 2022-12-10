@@ -8,7 +8,7 @@
       <div *ngFor="let line of translate.languages" class="flag-box">
         <img
           class="flag"
-          [id]="translate.dictionnary.header?translate.dictionnary.header[0].tag===line.id?'selected':'':''"
+          [id]="translate.dictionary?translate.dictionary.header[0].tag===line.id?'selected':'':''"
           [src]="urlBack + 'files/img/flags/png/'+line.id+'.png'"
           title="{{line.name}}"
           alt="{{line.name}}"

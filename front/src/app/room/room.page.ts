@@ -10,7 +10,6 @@ import {Router} from '@angular/router';
 export class RoomPage implements OnInit {
 
   public inARoom = false;
-  public nickname = '';
 
   constructor(
     private socketsService: SocketsService,
