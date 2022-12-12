@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import {SocketsService} from '../shared/services/sockets.service';
 import {Router} from '@angular/router';
+import {CookiesService} from '../shared/services/cookies.service';
 
 @Component({
   selector: 'app-room',
@@ -13,12 +14,14 @@ export class RoomPage implements OnInit {
 
   constructor(
     private socketsService: SocketsService,
-    private router: Router
+    private router: Router,
+    public cookiesService: CookiesService
   ) {}
 
-  ngOnInit() {
+  async ngOnInit() {
     this.socketsService.initSocket();
     this.socketsService.setRoomSockets();
+    this.cookiesService.username =  await this.cookiesService.getFromCookies('username');
   }
 
   toggleInARoom() {

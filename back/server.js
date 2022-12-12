@@ -96,11 +96,18 @@ con.connect(err => {
             gameInit.getTilesList(res);
         });
 
+        let roomsNumber = 0;
+
         io.on('connection', (socket) => {
             console.log('Someone connected');
 
             socket.on('createRoom', () => {
-                socket.emit('roomCreated', socket.id);
+                socket.join("room" + roomsNumber);
+                socket.emit('roomCreated', {id: socket.id, roomsNumber});
+            });
+
+            socket.on('joinRoom', (roomID) => {
+
             });
 
             socket.on('disconnect', () => {

@@ -18,7 +18,6 @@ export class TranslationService {
 
   //changes language cookie for language param (id), and changes dictionary for the new language
   updateLanguage = async (language) => {
-    console.log(language);
     await this.cookiesService.setCookie('language', language);
     this.languages = Object(await this.apiService.getLanguagesList()).list;
     this.initDictionary(Object(await this.apiService.getTranslation(

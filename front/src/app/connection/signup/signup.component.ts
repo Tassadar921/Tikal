@@ -17,7 +17,7 @@ export class SignupComponent implements OnInit {
   public outputEmail = '';
 
   public output = '';
-  public waiting = 0;
+  public waiting = false;
 
   private retour;
 
@@ -30,23 +30,19 @@ export class SignupComponent implements OnInit {
   ngOnInit() {}
 
   signUp = async () => {
-    this.waiting=1;
+    this.waiting = true;
     this.output = '';
     this.retour = await this.apiService.userExists(this.username, this.email);
     if (this.retour.status === 0) {
       this.output = this.retour.message;
-      this.waiting=0;
     } else {
       this.retour = await this.apiService.mailCreateAccount(this.username, this.checkingService.password, this.email);
       this.output = this.retour.message;
-      this.waiting=0;
     }
+    this.waiting = false;
   };
 
   checkUsername = () => this.outputUsername = this.checkingService.updateUsername(this.username);
 
-  checkEmail = () => {
-    this.outputEmail = this.checkingService.updateEmail(this.email);
-    console.log(this.outputEmail = this.checkingService.updateEmail(this.email));
-  };
+  checkEmail = () => this.outputEmail = this.checkingService.updateEmail(this.email);
 }
