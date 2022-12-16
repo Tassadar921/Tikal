@@ -8,25 +8,38 @@ import {CookiesService} from './cookies.service';
 export class SocketsService {
 
   public roomID;
-  public roomNumber;
   public playersInRoom = [];
+  public host = '';
 
   constructor(
     private socket: Socket,
     private cookiesService: CookiesService
   ) {}
 
-  initSocket = () => this.socket.connect();
-  roomCreated = () => this.socket.emit('createRoom');
-
-  setRoomSockets = () => {
-    this.socket.on('roomCreated', async (data) => {
-      this.roomID = data.id;
-      this.roomNumber = data.roomNumber;
+  initSocket = () => {
+    this.socket.connect();
+    this.socket.emit('getUsername', this.cookiesService.username);
+    this.socket.on('roomCreated', async (roomID) => {
+      this.roomID = roomID;
       this.playersInRoom.push(await this.cookiesService.getFromCookies('username'));
     });
-    this.socket.on('playerJoined', (player) => {
-      this.playersInRoom.push(player);
+  }
+
+  joinRoom = (roomID) => {
+    this.socket.on('roomJoined', (data) => {
+      this.roomID = data.roomID;
+      this.playersInRoom = data.playersInRoom;
+      this.playersInRoom.push(this.cookiesService.username);
     });
+    this.socket.emit('joinRoom', {roomID, username: this.cookiesService.username});
+    return !!this.roomID; //string to boolean TOO SMART
   };
+
+  createRoom = () => {
+    this.socket.emit('createRoom', {username: this.cookiesService.username});
+    this.socket.on('getPlayerList', () => {
+      this.socket.emit('playersInRoom', this.playersInRoom);
+    });
+  }
+
 }

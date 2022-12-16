@@ -3,6 +3,7 @@ import {SocketsService} from '../../shared/services/sockets.service';
 import { Clipboard } from '@capacitor/clipboard';
 import {ToastService} from '../../shared/services/toast.service';
 import {CookiesService} from '../../shared/services/cookies.service';
+import {Socket} from 'ngx-socket-io';
 
 @Component({
   selector: 'app-waiting',
@@ -14,12 +15,11 @@ export class WaitingComponent implements OnInit {
   constructor(
     public socketsService: SocketsService,
     private toastService: ToastService,
-    public cookiesService: CookiesService
+    public cookiesService: CookiesService,
+    private socket: Socket
   ) { }
 
-  async ngOnInit() {
-    this.socketsService.roomCreated();
-  }
+  async ngOnInit() {}
 
   copyID = async () => {
     await Clipboard.write({string: this.socketsService.roomID});

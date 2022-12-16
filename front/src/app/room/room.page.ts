@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import {SocketsService} from '../shared/services/sockets.service';
-import {Router} from '@angular/router';
 import {CookiesService} from '../shared/services/cookies.service';
 
 @Component({
@@ -11,21 +10,31 @@ import {CookiesService} from '../shared/services/cookies.service';
 export class RoomPage implements OnInit {
 
   public inARoom = false;
+  public tmpRoomID = '';
+  public output = '';
 
   constructor(
-    private socketsService: SocketsService,
-    private router: Router,
+    public socketsService: SocketsService,
     public cookiesService: CookiesService
   ) {}
 
   async ngOnInit() {
-    this.socketsService.initSocket();
-    this.socketsService.setRoomSockets();
     this.cookiesService.username =  await this.cookiesService.getFromCookies('username');
+    this.socketsService.initSocket();
+    document.getElementById('roomID').addEventListener('keyup', (e) => {
+      if(e.key==='Enter' && !this.inARoom){
+        if(!this.socketsService.joinRoom(this.tmpRoomID)){
+          this.output = 'Room not found';
+        }
+      }
+    });
   }
 
-  toggleInARoom() {
-    this.inARoom = !this.inARoom;
+  toggleInARoom = () => this.inARoom = !this.inARoom;
+
+  createRoom = () => {
+    this.toggleInARoom();
+    this.socketsService.createRoom();
   }
 
 }

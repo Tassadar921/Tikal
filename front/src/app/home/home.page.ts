@@ -42,7 +42,6 @@ export class HomePage implements AfterViewInit {
   ) {}
 
   async ngAfterViewInit() {
-    this.socketsService.setRoomSockets();
     //col and lines of the board, radius of hexagons
     const lines = 8;
     const col = 10;

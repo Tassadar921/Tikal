@@ -96,18 +96,29 @@ con.connect(err => {
             gameInit.getTilesList(res);
         });
 
-        let roomsNumber = 0;
-
         io.on('connection', (socket) => {
-            console.log('Someone connected');
+            let tmp;
+            console.log('user connected');
 
-            socket.on('createRoom', () => {
-                socket.join("room" + roomsNumber);
-                socket.emit('roomCreated', {id: socket.id, roomsNumber});
+            socket.on('getUsername', (username) => {
+               socket.username = username;
             });
 
-            socket.on('joinRoom', (roomID) => {
+            socket.on('createRoom', async () => {
+                socket.join("room_" + socket.id);
+                socket.emit('roomCreated', socket.id);
+                const sockets = await io.in("room_" + socket.id).fetchSockets().Socket;
+                for(const socket of sockets){
+                    console.log('===============================');
+                    console.log(socket.username);
+                }
+            });
 
+            socket.on('joinRoom', (data) => {
+                socket.join("room_" + data.roomID);
+                socket.to(data.roomID).emit('getPlayerList');
+                socket.emit('roomJoined', {roomID: data.roomID, playersInRoom: tmp});
+                socket.to("room_" + data.roomID).emit('playerJoined', data.username);
             });
 
             socket.on('disconnect', () => {

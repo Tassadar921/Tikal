@@ -2,7 +2,7 @@
   <div *ngIf="!inARoom" style="margin-top:200px">
     <ion-row>
       <ion-col>
-        <ion-button color="secondary" shape="round" size="large" (click)="toggleInARoom()">Create room</ion-button>
+        <ion-button color="secondary" shape="round" size="large" (click)="createRoom()">Create room</ion-button>
       </ion-col>
     </ion-row>
     <ion-row style="margin-top:100px;">
@@ -12,7 +12,12 @@
     </ion-row>
     <ion-row>
       <ion-col>
-        <ion-input maxlength="20" placeholder="Room ID" id="roomID"></ion-input>
+        <ion-input maxlength="20" placeholder="Room ID" id="roomID" [(ngModel)]="tmpRoomID"></ion-input>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <p>{{output}}</p>
       </ion-col>
     </ion-row>
   </div>
