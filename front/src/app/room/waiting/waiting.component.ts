@@ -3,7 +3,6 @@ import {SocketsService} from '../../shared/services/sockets.service';
 import { Clipboard } from '@capacitor/clipboard';
 import {ToastService} from '../../shared/services/toast.service';
 import {CookiesService} from '../../shared/services/cookies.service';
-import {Socket} from 'ngx-socket-io';
 
 @Component({
   selector: 'app-waiting',
@@ -15,8 +14,7 @@ export class WaitingComponent implements OnInit {
   constructor(
     public socketsService: SocketsService,
     private toastService: ToastService,
-    public cookiesService: CookiesService,
-    private socket: Socket
+    public cookiesService: CookiesService
   ) { }
 
   async ngOnInit() {}

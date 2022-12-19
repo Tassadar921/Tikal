@@ -102,12 +102,14 @@ con.connect(err => {
 
             socket.on('getUsername', (username) => {
                socket.username = username;
+               console.log('********************************');
+               console.log(socket.username);
             });
 
             socket.on('createRoom', async () => {
                 socket.join("room_" + socket.id);
                 socket.emit('roomCreated', socket.id);
-                const sockets = await io.in("room_" + socket.id).fetchSockets().Socket;
+                const sockets = await io.in("room_" + socket.id).fetchSockets();
                 for(const socket of sockets){
                     console.log('===============================');
                     console.log(socket.username);
