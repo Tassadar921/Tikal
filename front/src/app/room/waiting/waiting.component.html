@@ -17,7 +17,7 @@
             <h1>{{player}}</h1>
           </ion-col>
           <ion-col size="1">
-            <ion-button color="clear" style="margin-top:10px;" *ngIf="socketsService.playersInRoom[0]!==player">
+            <ion-button color="clear" style="margin-top:10px;" *ngIf="socketsService.playersInRoom[0]!==player && socketsService.playersInRoom[0]===cookiesService.username">
               <ion-icon name="close" slot="icon-only" color="medium"></ion-icon>
             </ion-button>
             <ion-icon name="star" *ngIf="socketsService.playersInRoom[0]===player" id="owner"></ion-icon>
@@ -26,7 +26,9 @@
       </div>
     </ion-col>
     <ion-col size="3">
-      DLC
+      <ion-content>
+        DLC
+      </ion-content>
     </ion-col>
   </ion-row>
 </ion-grid>

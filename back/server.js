@@ -1,11 +1,11 @@
-const app = require('express')();
+const express = require('express');
+const app = express();
 const bodyParser = require('body-parser');
 const logger = require('morgan');
 const methodOverride = require('method-override');
 const cors = require('cors');
 const mysql = require('mysql');
 const http = require('http').Server(app);
-const express = require('express');
 const io = require('socket.io')(http, {
     cors: {
         origins: ['http://localhost:8100']
@@ -97,30 +97,41 @@ con.connect(err => {
         });
 
         io.on('connection', (socket) => {
-            let tmp;
             console.log('user connected');
 
             socket.on('getUsername', (username) => {
                socket.username = username;
-               console.log('********************************');
-               console.log(socket.username);
+               console.log('connected : ', username);
             });
+
+            socket.emit('usernameLost');
 
             socket.on('createRoom', async () => {
                 socket.join("room_" + socket.id);
                 socket.emit('roomCreated', socket.id);
-                const sockets = await io.in("room_" + socket.id).fetchSockets();
-                for(const socket of sockets){
-                    console.log('===============================');
-                    console.log(socket.username);
-                }
             });
 
-            socket.on('joinRoom', (data) => {
-                socket.join("room_" + data.roomID);
-                socket.to(data.roomID).emit('getPlayerList');
-                socket.emit('roomJoined', {roomID: data.roomID, playersInRoom: tmp});
-                socket.to("room_" + data.roomID).emit('playerJoined', data.username);
+            socket.on('joinRoom', async (data) => {
+                if(!socket.username){
+                    socket.emit('usernameLost');
+                }
+                let rooms = io.sockets.adapter.rooms;
+                let playersInRoom = [];
+                for(const room of rooms){
+                    if(room[0] === 'room_' + data.roomID){
+                        socket.join("room_" + data.roomID);
+                        const sockets = await io.in("room_" + data.roomID).fetchSockets();
+                        for(const client of sockets){
+                            console.log('ici : ', client.username);
+                            playersInRoom.push(client.username);
+                        }
+                        socket.emit('roomJoined', {roomID: data.roomID, playersInRoom});
+                        socket.to("room_" + data.roomID).emit('playerJoined', data.username);
+                    }
+                }
+                if(!playersInRoom.length){
+                    socket.emit('roomNotFound');
+                }
             });
 
             socket.on('disconnect', () => {

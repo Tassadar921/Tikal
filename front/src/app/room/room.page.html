@@ -1,5 +1,5 @@
 <ion-grid>
-  <div *ngIf="!inARoom" style="margin-top:150px">
+  <div *ngIf="!socketsService.inARoom" style="margin-top:150px">
     <ion-row>
       <ion-col>
         <ion-button color="secondary" shape="round" size="large" (click)="createRoom()">Create room</ion-button>
@@ -12,16 +12,16 @@
     </ion-row>
     <ion-row>
       <ion-col>
-        <ion-input maxlength="20" placeholder="Room ID" id="roomID" [(ngModel)]="tmpRoomID"></ion-input>
+        <ion-input maxlength="20" placeholder="Room ID" id="roomID" [(ngModel)]="inputRoomID"></ion-input>
       </ion-col>
     </ion-row>
     <ion-row>
       <ion-col>
-        <p>{{output}}</p>
+        <p>{{socketsService.output}}</p>
       </ion-col>
     </ion-row>
   </div>
-  <div *ngIf="inARoom">
+  <div *ngIf="socketsService.inARoom">
     <app-waiting></app-waiting>
   </div>
 </ion-grid>

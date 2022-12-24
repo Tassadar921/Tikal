@@ -8,9 +8,7 @@ import {CookiesService} from '../shared/services/cookies.service';
   styleUrls: ['./room.page.scss'],
 })
 export class RoomPage implements OnInit {
-
-  public inARoom = false;
-  public tmpRoomID = '';
+  public inputRoomID = '';
   public output = '';
 
   constructor(
@@ -22,19 +20,17 @@ export class RoomPage implements OnInit {
     this.cookiesService.username =  await this.cookiesService.getFromCookies('username');
     this.socketsService.initSocket();
     document.getElementById('roomID').addEventListener('keyup', (e) => {
-      if(e.key==='Enter' && !this.inARoom){
-        if(!this.socketsService.joinRoom(this.tmpRoomID)){
-          this.output = 'Room not found';
-        }
+      if(e.key==='Enter' && !this.socketsService.inARoom){
+        this.socketsService.joinRoom(this.inputRoomID);
       }
     });
   }
 
-  toggleInARoom = () => this.inARoom = !this.inARoom;
+  toggleInARoom = () => this.socketsService.inARoom = !this.socketsService.inARoom;
 
   createRoom = () => {
-    this.toggleInARoom();
     this.socketsService.createRoom();
+    this.toggleInARoom();
   }
 
 }
