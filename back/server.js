@@ -98,10 +98,11 @@ con.connect(err => {
 
         io.on('connection', (socket) => {
             console.log('user connected');
+            console.log('socket id:', socket.id);
 
             socket.on('getUsername', (username) => {
                socket.username = username;
-               console.log('connected : ', username);
+               socket.ready = false;
             });
 
             socket.emit('usernameLost');
@@ -109,6 +110,7 @@ con.connect(err => {
             socket.on('createRoom', async () => {
                 socket.join("room_" + socket.id);
                 socket.emit('roomCreated', socket.id);
+                socket.roomID = socket.id;
             });
 
             socket.on('joinRoom', async (data) => {
@@ -122,9 +124,9 @@ con.connect(err => {
                         socket.join("room_" + data.roomID);
                         const sockets = await io.in("room_" + data.roomID).fetchSockets();
                         for(const client of sockets){
-                            console.log('ici : ', client.username);
-                            playersInRoom.push(client.username);
+                            playersInRoom.push({username: client.username, ready: client.ready});
                         }
+                        socket.roomID = data.roomID;
                         socket.emit('roomJoined', {roomID: data.roomID, playersInRoom});
                         socket.to("room_" + data.roomID).emit('playerJoined', data.username);
                     }
@@ -132,6 +134,19 @@ con.connect(err => {
                 if(!playersInRoom.length){
                     socket.emit('roomNotFound');
                 }
+            });
+
+            socket.on('toggleReady', () => {
+                socket.ready = !socket.ready;
+                socket.to("room_" + socket.roomID).emit('playerReady', {username: socket.username, ready: socket.ready});
+                socket.emit('playerReady', {username: socket.username, ready: socket.ready});
+            });
+
+            socket.on('leaveRoom', () => {
+                socket.to("room_" + socket.roomID).emit('playerLeft', {username: socket.username});
+                socket.ready = false;
+                socket.leave('room_' + socket.roomID);
+                socket.roomID = null;
             });
 
             socket.on('disconnect', () => {

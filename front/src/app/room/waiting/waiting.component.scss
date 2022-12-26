@@ -2,6 +2,10 @@ ion-col{
   border: 1px solid #000;
 }
 
+.noBorders{
+  border: none;
+}
+
 #id ion-col{
   border: none;
 }
@@ -10,8 +14,11 @@ ion-col{
   cursor: pointer;
 }
 
-#owner{
-  margin-top: 10px;
-  color: yellow;
-  font-size:2em;
+#client{
+  font-weight: bold;
+}
+
+#host{
+  font-size: 1.7em;
+  margin-top:10px;
 }

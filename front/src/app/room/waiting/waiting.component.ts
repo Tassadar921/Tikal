@@ -17,7 +17,7 @@ export class WaitingComponent implements OnInit {
     public cookiesService: CookiesService
   ) { }
 
-  async ngOnInit() {}
+  ngOnInit() {}
 
   copyID = async () => {
     await Clipboard.write({string: this.socketsService.roomID});

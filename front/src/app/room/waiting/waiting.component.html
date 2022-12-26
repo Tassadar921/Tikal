@@ -1,11 +1,16 @@
 <ion-grid>
   <ion-row>
     <ion-col>
-      <ion-row id="id" (click)="copyID()">
-        <ion-col>
+      <ion-row style="border-bottom: solid 1px white">
+        <ion-col size="1" class="noBorders">
+          <ion-button fill="clear" (click)="socketsService.leaveRoom()">
+            <ion-icon name="exit" slot="icon-only" color="danger"></ion-icon>
+          </ion-button>
+        </ion-col>
+        <ion-col id="id" (click)="copyID()" class="noBorders">
           <h1>{{socketsService.roomID}}</h1>
         </ion-col>
-        <ion-col size="1">
+        <ion-col size="1" class="noBorders">
           <ion-button color="clear" style="margin-top:10px;">
             <ion-icon name="copy" slot="icon-only" color="medium"></ion-icon>
           </ion-button>
@@ -13,17 +18,27 @@
       </ion-row>
       <div *ngFor="let player of socketsService.playersInRoom">
         <ion-row>
-          <ion-col>
-            <h1>{{player}}</h1>
+          <ion-col size="1" class="noBorders">
+            <ion-icon style="margin-top:13px;" [name]="player.ready?'checkmark':'close'" size="large" [color]="player.ready?'success':'danger'"></ion-icon>
           </ion-col>
-          <ion-col size="1">
-            <ion-button color="clear" style="margin-top:10px;" *ngIf="socketsService.playersInRoom[0]!==player && socketsService.playersInRoom[0]===cookiesService.username">
-              <ion-icon name="close" slot="icon-only" color="medium"></ion-icon>
+          <ion-col class="noBorders">
+            <h1 [id]="player.username===cookiesService.username?'client':''">{{player.username}}</h1>
+          </ion-col>
+          <ion-col size="1" class="noBorders">
+            <ion-icon id="host" name="star-outline" color="warning" *ngIf="socketsService.playersInRoom[0].username===player.username"></ion-icon>
+          </ion-col>
+          <ion-col size="1" *ngIf="socketsService.playersInRoom[0].username===cookiesService.username && socketsService.playersInRoom[0].username!==player.username" class="noBorders">
+            <ion-button color="clear" style="margin-top:10px;">
+              <ion-icon name="exit" slot="icon-only" color="medium"></ion-icon>
             </ion-button>
-            <ion-icon name="star" *ngIf="socketsService.playersInRoom[0]===player" id="owner"></ion-icon>
           </ion-col>
         </ion-row>
       </div>
+      <ion-row>
+        <ion-col size="1" class="noBorders">
+          {{socketsService.playersInRoom.length}}/4
+        </ion-col>
+      </ion-row>
     </ion-col>
     <ion-col size="3">
       <ion-content>
@@ -32,3 +47,9 @@
     </ion-col>
   </ion-row>
 </ion-grid>
+
+<ion-fab vertical="bottom">
+  <ion-fab-button (click)="socketsService.toggleReady()" [color]="socketsService.ready?'success':'danger'">
+    <ion-icon [name]="socketsService.ready?'checkmark':'close'" color="light"></ion-icon>
+  </ion-fab-button>
+</ion-fab>

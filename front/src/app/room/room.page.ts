@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, AfterViewInit } from '@angular/core';
 import {SocketsService} from '../shared/services/sockets.service';
 import {CookiesService} from '../shared/services/cookies.service';
 
@@ -7,8 +7,7 @@ import {CookiesService} from '../shared/services/cookies.service';
   templateUrl: './room.page.html',
   styleUrls: ['./room.page.scss'],
 })
-export class RoomPage implements OnInit {
-  public inputRoomID = '';
+export class RoomPage implements AfterViewInit {
   public output = '';
 
   constructor(
@@ -16,21 +15,20 @@ export class RoomPage implements OnInit {
     public cookiesService: CookiesService
   ) {}
 
-  async ngOnInit() {
-    this.cookiesService.username =  await this.cookiesService.getFromCookies('username');
+  async ngAfterViewInit() {
+    // this.cookiesService.username =  await this.cookiesService.getFromCookies('username');
+    this.cookiesService.username = (Math.random() + 1).toString(36).substring(2);
     this.socketsService.initSocket();
-    document.getElementById('roomID').addEventListener('keyup', (e) => {
-      if(e.key==='Enter' && !this.socketsService.inARoom){
-        this.socketsService.joinRoom(this.inputRoomID);
-      }
-    });
   }
+
 
   toggleInARoom = () => this.socketsService.inARoom = !this.socketsService.inARoom;
 
-  createRoom = () => {
-    this.socketsService.createRoom();
-    this.toggleInARoom();
-  }
+
+  setEventRoomID = () => {
+
+  };
+
+
 
 }
