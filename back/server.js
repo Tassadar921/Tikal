@@ -119,19 +119,25 @@ con.connect(err => {
                 }
                 let rooms = io.sockets.adapter.rooms;
                 let playersInRoom = [];
+                let currentRoom;
                 for(const room of rooms){
                     if(room[0] === 'room_' + data.roomID){
-                        socket.join("room_" + data.roomID);
+                        currentRoom = room[0];
                         const sockets = await io.in("room_" + data.roomID).fetchSockets();
-                        for(const client of sockets){
-                            playersInRoom.push({username: client.username, ready: client.ready});
+                        if(sockets.length < 4) {
+                            socket.join("room_" + data.roomID);
+                            for (const client of sockets) {
+                                playersInRoom.push({username: client.username, ready: client.ready});
+                            }
+                            socket.roomID = data.roomID;
+                            socket.emit('roomJoined', {roomID: data.roomID, playersInRoom});
+                            socket.to("room_" + data.roomID).emit('playerJoined', data.username);
+                        }else{
+                            socket.emit('roomFull');
                         }
-                        socket.roomID = data.roomID;
-                        socket.emit('roomJoined', {roomID: data.roomID, playersInRoom});
-                        socket.to("room_" + data.roomID).emit('playerJoined', data.username);
                     }
                 }
-                if(!playersInRoom.length){
+                if(!currentRoom){
                     socket.emit('roomNotFound');
                 }
             });
@@ -149,12 +155,46 @@ con.connect(err => {
                 socket.roomID = null;
             });
 
+            socket.on('kick', username => {
+                socket.to("room_" + socket.roomID).emit('playerKicked', username);
+                socket.emit('playerKicked', username);
+            });
+
             socket.on('disconnect', () => {
                 console.log('user disconnected');
             });
         });
     }
 });
+
+process.stdin.resume();//so the program will not close instantly
+
+function exitHandler(options, exitCode) {
+    if (options.cleanup) {
+        console.log('clean exit');
+    }
+    if (exitCode || exitCode === 0) {
+        console.log('not clean exit');
+    }
+    if (options.exit) {
+        process.exit()
+    }
+}
+
+//do something when app is closing
+process.on('exit', exitHandler.bind(null,{cleanup:true}));
+
+//catches ctrl+c event
+process.on('SIGINT', exitHandler.bind(null, {exit:true}));
+
+// catches "kill pid" (for example: nodemon restart)
+if(process.platform === "linux") { //WORKS ONLY ON LINUX, USELESS ON WINDOWS
+    process.on('SIGUSR1', exitHandler.bind(null, {exit: true}));
+    process.on('SIGUSR2', exitHandler.bind(null, {exit: true}));
+}
+
+//catches uncaught exceptions
+process.on('uncaughtException', exitHandler.bind(null, {exit:true}));
 
 if (http.listen(process.env.PORT || 8080)) {
     console.log('Serveur lancé sur le port 8080');

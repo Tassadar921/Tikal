@@ -26,9 +26,7 @@
           </ion-col>
           <ion-col size="1" class="noBorders">
             <ion-icon id="host" name="star-outline" color="warning" *ngIf="socketsService.playersInRoom[0].username===player.username"></ion-icon>
-          </ion-col>
-          <ion-col size="1" *ngIf="socketsService.playersInRoom[0].username===cookiesService.username && socketsService.playersInRoom[0].username!==player.username" class="noBorders">
-            <ion-button color="clear" style="margin-top:10px;">
+            <ion-button color="clear" style="margin-top:10px;" (click)="socketsService.kick(player.username)" *ngIf="socketsService.playersInRoom[0].username===cookiesService.username && socketsService.playersInRoom[0].username!==player.username">
               <ion-icon name="exit" slot="icon-only" color="medium"></ion-icon>
             </ion-button>
           </ion-col>

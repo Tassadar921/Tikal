@@ -10,7 +10,6 @@ export class SocketsService {
 
   public roomID;
   public playersInRoom = [];
-  public host = '';
   public inARoom = false;
   public ready = false;
 
@@ -39,13 +38,15 @@ export class SocketsService {
     this.socket.on('roomNotFound', async () => {
       await this.toastService.displayToast('Room not found', 3000, 'bottom');
     });
+    this.socket.on('roomFull', async () => {
+      await this.toastService.displayToast('Room is full', 3000, 'bottom');
+    });
     this.socket.emit('joinRoom', {roomID, username: this.cookiesService.username});
   };
 
   createRoom = () => {
     this.socket.on('roomCreated', async roomID => {
       this.roomID = roomID;
-      this.playersInRoom.push({username: this.cookiesService.username, ready:false});
     });
     this.socket.emit('createRoom', {username: this.cookiesService.username});
     this.inARoom = true;
@@ -53,6 +54,7 @@ export class SocketsService {
   };
 
   enterRoom = () => {
+    this.playersInRoom.push({username: this.cookiesService.username, ready:false});
     this.socket.on('playerJoined', username => this.playersInRoom.push({username, ready:false}));
     this.socket.on('playerReady', data => {
       this.playersInRoom.forEach(player => {
@@ -64,9 +66,17 @@ export class SocketsService {
     this.socket.on('playerLeft', data => {
       this.playersInRoom = this.playersInRoom.filter(player => player.username !== data.username);
     });
-    this.socket.on('kicked', async () => {
+    this.socket.on('playerKicked', async username => {
+      if(username === this.cookiesService.username) {
+        this.leaveRoom();
+        await this.toastService.displayToast('You have been kicked from the room', 3000, 'bottom');
+      } else {
+        this.playersInRoom = this.playersInRoom.filter(player => player.username !== username);
+      }
+    });
+    this.socket.on('roomClosed', async () => {
       this.leaveRoom();
-      await this.toastService.displayToast('You have been kicked from the room', 3000, 'bottom');
+      await this.toastService.displayToast('Room has been closed', 3000, 'bottom');
     });
   };
 
@@ -82,5 +92,7 @@ export class SocketsService {
     this.ready = !this.ready;
     this.socket.emit('toggleReady', this.ready);
   };
+
+  kick = (username) => this.socket.emit('kick', username);
 
 }
