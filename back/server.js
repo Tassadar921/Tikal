@@ -174,18 +174,6 @@ con.connect(err => {
 
 process.stdin.resume();//so the program will not close instantly
 
-function exitHandler(options, exitCode) {
-    if (options.cleanup) {
-        console.log('ON SAVE');
-    }
-    if (exitCode || exitCode === 0) {
-        console.log('ON SAVE');
-    }
-    if (options.exit) {
-        process.exit();
-    }
-}
-
 //do something when app is closing
 process.on('exit', () => {
     console.log('ON SAVE EXIT');
