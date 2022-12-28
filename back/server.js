@@ -187,7 +187,7 @@ process.on('SIGINT', () => {
 });
 
 // catches "kill pid" (for example: nodemon restart)
-if(process.platform === "linux") { //WORKS ONLY ON LINUX, USELESS ON WINDOWS
+if(process.platform !=='win32') { //WORKS ONLY ON LINUX, USELESS ON WINDOWS
     process.on('SIGUSR1', () => {
         console.log('ON SAVE SIGUSR1');
         process.exit();
