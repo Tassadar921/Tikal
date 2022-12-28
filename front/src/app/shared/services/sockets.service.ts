@@ -78,6 +78,10 @@ export class SocketsService {
       this.leaveRoom();
       await this.toastService.displayToast('Room has been closed', 3000, 'bottom');
     });
+    this.socket.on('roomClosed', async () => {
+      this.leaveRoom();
+      await this.toastService.displayToast('Room closed', 3000, 'bottom');
+    });
   };
 
   leaveRoom = () => {

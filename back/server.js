@@ -101,7 +101,7 @@ con.connect(err => {
             console.log('user connected');
             console.log('socket id:', socket.id);
 
-            let leaveRoom = () => {
+            function leaveRoom() {
                 socket.to("room_" + socket.roomID).emit('playerLeft', {username: socket.username});
                 socket.ready = false;
                 socket.leave('room_' + socket.roomID);
@@ -109,8 +109,8 @@ con.connect(err => {
             }
 
             socket.on('getUsername', (username) => {
-               socket.username = username;
-               socket.ready = false;
+                socket.username = username;
+                socket.ready = false;
             });
 
             socket.emit('usernameLost');
@@ -122,17 +122,17 @@ con.connect(err => {
             });
 
             socket.on('joinRoom', async (data) => {
-                if(!socket.username){
+                if (!socket.username) {
                     socket.emit('usernameLost');
                 }
                 let rooms = io.sockets.adapter.rooms;
                 let playersInRoom = [];
                 let currentRoom;
-                for(const room of rooms){
-                    if(room[0] === 'room_' + data.roomID){
+                for (const room of rooms) {
+                    if (room[0] === 'room_' + data.roomID) {
                         currentRoom = room[0];
                         const sockets = await io.in("room_" + data.roomID).fetchSockets();
-                        if(sockets.length < 4) {
+                        if (sockets.length < 4) {
                             for (const client of sockets) {
                                 playersInRoom.push({username: client.username, ready: client.ready});
                             }
@@ -140,19 +140,22 @@ con.connect(err => {
                             socket.roomID = data.roomID;
                             socket.emit('roomJoined', {roomID: data.roomID, playersInRoom});
                             socket.to("room_" + data.roomID).emit('playerJoined', data.username);
-                        }else{
+                        } else {
                             socket.emit('roomFull');
                         }
                     }
                 }
-                if(!currentRoom){
+                if (!currentRoom) {
                     socket.emit('roomNotFound');
                 }
             });
 
             socket.on('toggleReady', () => {
                 socket.ready = !socket.ready;
-                socket.to("room_" + socket.roomID).emit('playerReady', {username: socket.username, ready: socket.ready});
+                socket.to("room_" + socket.roomID).emit('playerReady', {
+                    username: socket.username,
+                    ready: socket.ready
+                });
                 socket.emit('playerReady', {username: socket.username, ready: socket.ready});
             });
 
@@ -174,33 +177,54 @@ con.connect(err => {
 
 process.stdin.resume();//so the program will not close instantly
 
+async function save() {
+    //SAVE
+    await kickPlayers();
+}
+
+async function kickPlayers() {
+    const rooms = io.sockets.adapter.rooms;
+    for (const room of rooms) {
+        if (room[0].startsWith('room_')) {
+            const sockets = await io.in(room[0]).fetchSockets();
+            sockets[0].to('room_' + sockets[0].roomID).emit('roomClosed');
+            sockets[0].emit('roomClosed');
+            for(const client of sockets){
+                client.leave('room_' + client.roomID);
+                client.roomID = null;
+                client.ready = false;
+            }
+        }
+    }
+}
+
 //do something when app is closing
-process.on('exit', () => {
-    console.log('ON SAVE EXIT');
+process.on('exit', async () => {
+    await save();
     process.exit();
 });
 
 //catches ctrl+c event
-process.on('SIGINT', () => {
-    console.log('ON SAVE SIGINT');
+process.on('SIGINT', async () => {
+    await save();
     process.exit();
 });
 
 // catches "kill pid" (for example: nodemon restart)
-if(process.platform !=='win32') { //WORKS ONLY ON LINUX, USELESS ON WINDOWS
-    process.on('SIGUSR1', () => {
-        console.log('ON SAVE SIGUSR1');
+if (process.platform !== 'win32') { //WORKS ONLY ON LINUX, USELESS ON WINDOWS
+    process.on('SIGUSR1', async() => {
+        await save();
         process.exit();
     });
-    process.on('SIGUSR2', () => {
-        console.log('ON SAVE SIGUSR2');
+    process.on('SIGUSR2', async () => {
+        await save();
         process.exit();
     });
 }
 
 //catches uncaught exceptions
-process.on('uncaughtException', () => {
-    console.log('ON SAVE EXCEPTION INCONNUE');
+process.on('uncaughtException', async () => {
+    await save();
     process.exit();
 });
 
@@ -209,11 +233,11 @@ nodemon({
     ext: 'js json'
 });
 //patch SIGUSR1-2 on windows for nodemon
-nodemon.on('start', function () {
-}).on('quit', function () {
-    console.log('ON SAVE');
-}).on('restart', function (files) {
-    console.log('ON SAVE');
+nodemon.on('start', () => {
+}).on('quit', async () =>{
+    await save();
+}).on('restart', async (files) => {
+    await save();
 });
 
 if (http.listen(process.env.PORT || 8080)) {
