@@ -6,6 +6,7 @@ const methodOverride = require('method-override');
 const cors = require('cors');
 const mysql = require('mysql');
 const http = require('http').Server(app);
+const nodemon = require('nodemon');
 const io = require('socket.io')(http, {
     cors: {
         origins: ['http://localhost:8100']
@@ -100,6 +101,13 @@ con.connect(err => {
             console.log('user connected');
             console.log('socket id:', socket.id);
 
+            let leaveRoom = () => {
+                socket.to("room_" + socket.roomID).emit('playerLeft', {username: socket.username});
+                socket.ready = false;
+                socket.leave('room_' + socket.roomID);
+                socket.roomID = null;
+            }
+
             socket.on('getUsername', (username) => {
                socket.username = username;
                socket.ready = false;
@@ -125,10 +133,10 @@ con.connect(err => {
                         currentRoom = room[0];
                         const sockets = await io.in("room_" + data.roomID).fetchSockets();
                         if(sockets.length < 4) {
-                            socket.join("room_" + data.roomID);
                             for (const client of sockets) {
                                 playersInRoom.push({username: client.username, ready: client.ready});
                             }
+                            socket.join("room_" + data.roomID);
                             socket.roomID = data.roomID;
                             socket.emit('roomJoined', {roomID: data.roomID, playersInRoom});
                             socket.to("room_" + data.roomID).emit('playerJoined', data.username);
@@ -149,10 +157,7 @@ con.connect(err => {
             });
 
             socket.on('leaveRoom', () => {
-                socket.to("room_" + socket.roomID).emit('playerLeft', {username: socket.username});
-                socket.ready = false;
-                socket.leave('room_' + socket.roomID);
-                socket.roomID = null;
+                leaveRoom();
             });
 
             socket.on('kick', username => {
@@ -161,7 +166,7 @@ con.connect(err => {
             });
 
             socket.on('disconnect', () => {
-                console.log('user disconnected');
+                leaveRoom();
             });
         });
     }
@@ -171,30 +176,57 @@ process.stdin.resume();//so the program will not close instantly
 
 function exitHandler(options, exitCode) {
     if (options.cleanup) {
-        console.log('clean exit');
+        console.log('ON SAVE');
     }
     if (exitCode || exitCode === 0) {
-        console.log('not clean exit');
+        console.log('ON SAVE');
     }
     if (options.exit) {
-        process.exit()
+        process.exit();
     }
 }
 
 //do something when app is closing
-process.on('exit', exitHandler.bind(null,{cleanup:true}));
+process.on('exit', () => {
+    console.log('ON SAVE EXIT');
+    process.exit();
+});
 
 //catches ctrl+c event
-process.on('SIGINT', exitHandler.bind(null, {exit:true}));
+process.on('SIGINT', () => {
+    console.log('ON SAVE SIGINT');
+    process.exit();
+});
 
 // catches "kill pid" (for example: nodemon restart)
 if(process.platform === "linux") { //WORKS ONLY ON LINUX, USELESS ON WINDOWS
-    process.on('SIGUSR1', exitHandler.bind(null, {exit: true}));
-    process.on('SIGUSR2', exitHandler.bind(null, {exit: true}));
+    process.on('SIGUSR1', () => {
+        console.log('ON SAVE SIGUSR1');
+        process.exit();
+    });
+    process.on('SIGUSR2', () => {
+        console.log('ON SAVE SIGUSR2');
+        process.exit();
+    });
 }
 
 //catches uncaught exceptions
-process.on('uncaughtException', exitHandler.bind(null, {exit:true}));
+process.on('uncaughtException', () => {
+    console.log('ON SAVE EXCEPTION INCONNUE');
+    process.exit();
+});
+
+nodemon({
+    script: 'server.js',
+    ext: 'js json'
+});
+//patch SIGUSR1-2 on windows for nodemon
+nodemon.on('start', function () {
+}).on('quit', function () {
+    console.log('ON SAVE');
+}).on('restart', function (files) {
+    console.log('ON SAVE');
+});
 
 if (http.listen(process.env.PORT || 8080)) {
     console.log('Serveur lancé sur le port 8080');
