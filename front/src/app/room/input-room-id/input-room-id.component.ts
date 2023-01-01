@@ -17,13 +17,14 @@ export class InputRoomIDComponent implements OnInit {
   ngOnInit() {
     document.getElementById('roomID').addEventListener('keyup', (e) => {
       if(e.key==='Enter' && !this.socketsService.inARoom){
+        this.socketsService.removeAllListeners();
         this.socketsService.joinRoom(this.inputRoomID);
       }
     });
   }
 
   createRoom = () => {
+    this.socketsService.removeAllListeners();
     this.socketsService.createRoom();
-  }
-
+  };
 }

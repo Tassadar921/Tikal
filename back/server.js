@@ -143,6 +143,7 @@ con.connect(err => {
                         } else {
                             socket.emit('roomFull');
                         }
+                        break;
                     }
                 }
                 if (!currentRoom) {
@@ -150,12 +151,39 @@ con.connect(err => {
                 }
             });
 
-            socket.on('toggleReady', () => {
+            socket.on('toggleReady', async () => {
                 socket.ready = !socket.ready;
                 socket.to("room_" + socket.roomID).emit('playerReady', {
                     username: socket.username,
                     ready: socket.ready
                 });
+                const sockets = await io.in("room_" + socket.roomID).fetchSockets();
+                if(sockets.length === 4) {
+                    let everyoneReady = sockets.every(socket => socket.ready);
+                    if (everyoneReady) {
+                        let door = true;
+                        socket.on('cancelEveryoneReady', () => {
+                            door = false;
+                            socket.ready = false;
+                        });
+                        for(let i=5; i>0; i--) {
+                            if(door) {
+                                socket.to("room_" + socket.roomID).emit('everyoneReady', i);
+                                socket.emit('everyoneReady', i);
+                                await new Promise(resolve => setTimeout(resolve, 1000));
+                            }else{
+                                let playersInRoom = [];
+                                let sockets = await io.in("room_" + socket.roomID).fetchSockets();
+                                for (const client of sockets) {
+                                    playersInRoom.push({username: client.username, ready: client.ready});
+                                }
+                                socket.to("room_" + socket.roomID).emit('everyoneReadyCancelTriggered', playersInRoom);
+                                socket.emit('everyoneReadyCancelTriggered', playersInRoom);
+                                break;
+                            }
+                        }
+                    }
+                }
                 socket.emit('playerReady', {username: socket.username, ready: socket.ready});
             });
 

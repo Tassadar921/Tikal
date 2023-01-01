@@ -20,7 +20,6 @@ export class WaitingComponent implements OnInit {
   ) { }
 
   ngOnInit() {}
-
   copyID = async () => {
     await Clipboard.write({string: this.socketsService.roomID});
     await this.toastService.displayToast('Copied to clipboard', 3000, 'bottom');

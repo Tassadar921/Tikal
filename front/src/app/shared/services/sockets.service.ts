@@ -1,7 +1,8 @@
-import { Injectable } from '@angular/core';
+import {Injectable} from '@angular/core';
 import {Socket} from 'ngx-socket-io';
 import {CookiesService} from './cookies.service';
 import {ToastService} from './toast.service';
+import {AlertController} from '@ionic/angular';
 
 @Injectable({
   providedIn: 'root'
@@ -16,8 +17,10 @@ export class SocketsService {
   constructor(
     private socket: Socket,
     private cookiesService: CookiesService,
-    private toastService: ToastService
-  ) {}
+    private toastService: ToastService,
+    private alertController: AlertController
+  ) {
+  }
 
   initSocket = () => {
     this.socket.connect();
@@ -25,6 +28,10 @@ export class SocketsService {
       this.sendUsername();
     });
   };
+
+  removeAllListeners = () => {
+    this.socket.removeAllListeners();
+  }
 
   sendUsername = () => this.socket.emit('getUsername', this.cookiesService.username);
 
@@ -54,11 +61,11 @@ export class SocketsService {
   };
 
   enterRoom = () => {
-    this.playersInRoom.push({username: this.cookiesService.username, ready:false});
-    this.socket.on('playerJoined', username => this.playersInRoom.push({username, ready:false}));
+    this.playersInRoom.push({username: this.cookiesService.username, ready: false});
+    this.socket.on('playerJoined', username => this.playersInRoom.push({username, ready: false}));
     this.socket.on('playerReady', data => {
       this.playersInRoom.forEach(player => {
-        if(player.username === data.username){
+        if (player.username === data.username) {
           player.ready = data.ready;
         }
       });
@@ -67,25 +74,44 @@ export class SocketsService {
       this.playersInRoom = this.playersInRoom.filter(player => player.username !== data.username);
     });
     this.socket.on('playerKicked', async username => {
-      if(username === this.cookiesService.username) {
-        this.leaveRoom();
+      if (username === this.cookiesService.username) {
+        await this.leaveRoom();
         await this.toastService.displayToast('You have been kicked from the room', 3000, 'bottom');
       } else {
         this.playersInRoom = this.playersInRoom.filter(player => player.username !== username);
       }
     });
     this.socket.on('roomClosed', async () => {
-      this.leaveRoom();
-      await this.toastService.displayToast('Room has been closed', 3000, 'bottom');
-    });
-    this.socket.on('roomClosed', async () => {
-      this.leaveRoom();
+      await this.leaveRoom();
       await this.toastService.displayToast('Room closed', 3000, 'bottom');
+    });
+    this.socket.on('everyoneReady', async (count) => {
+      if(count!==5){
+        await this.alertController.dismiss();
+      }
+      const alert = await this.alertController.create({
+        header: 'Launching game in ' + count + ' seconds',
+        backdropDismiss: false,
+        buttons: [
+          {
+            text: 'Cancel',
+            handler: () => {
+              this.socket.emit('cancelEveryoneReady');
+            },
+          }
+        ]
+      });
+      await alert.present();
+    });
+    this.socket.on('everyoneReadyCancelTriggered', async (playersInRoom) => {
+      this.playersInRoom = playersInRoom;
+      await this.alertController.dismiss();
     });
   };
 
-  leaveRoom = () => {
+  leaveRoom = async () => {
     this.socket.emit('leaveRoom');
+    await this.alertController.dismiss();
     this.roomID = '';
     this.playersInRoom = [];
     this.inARoom = false;
