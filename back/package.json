@@ -1,12 +1,13 @@
 {
-  "name": "chat",
+  "name": "tikal",
   "version": "1.0.0",
-  "description": "test chat for students",
+  "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Tassadar921",
+  "type": "module",
   "license": "ISC",
   "dependencies": {
     "axios": "^0.27.2",
@@ -25,6 +26,7 @@
     "mysql": "^2.18.1",
     "nodemailer": "^6.7.8",
     "nodemon": "^2.0.19",
-    "socket.io": "^4.5.4"
+    "socket.io": "^4.5.4",
+    "three": "^0.148.0"
   }
 }

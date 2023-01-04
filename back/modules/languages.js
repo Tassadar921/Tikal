@@ -1,11 +1,11 @@
 //sends the json index of languages
-module.exports.getLanguagesList = function (res) {
+function getLanguagesList(res) {
     const index = require('../files/json/translation/index.json');
     res.send(index);
 }
 
 //sends the json of the language id selectedLanguage
-module.exports.getTranslation = function (language, res) {
+function getTranslation(language, res) {
     const translation = require('../files/json/translation/' + language + '.json');
     res.send(translation);
 }

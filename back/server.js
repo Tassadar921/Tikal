@@ -1,19 +1,18 @@
-const express = require('express');
+import express from 'express';
 const app = express();
-const bodyParser = require('body-parser');
-const logger = require('morgan');
-const methodOverride = require('method-override');
-const cors = require('cors');
-const mysql = require('mysql');
-const http = require('http').Server(app);
-const nodemon = require('nodemon');
-const io = require('socket.io')(http, {
-    cors: {
-        origins: ['http://localhost:8100']
-    }
-});
+import bodyParser from 'body-parser';
+import morgan from 'morgan';
+import methodOverride from 'method-override';
+import cors from 'cors';
+import mysql from 'mysql';
+import http from 'http';
+const httpServer = http.Server(app);
+import nodemon from 'nodemon';
+import {Server} from 'socket.io';
+const io = new Server(httpServer);
+import expressSession from 'express-session'
 
-const session = require('express-session')({
+const session = expressSession({
     secret: 'eb8fcc253281389225b4f7872f2336918ddc7f689e1fc41b64d5c4f378cdc438',
     resave: true,
     saveUninitialized: true,
@@ -30,16 +29,17 @@ const con = mysql.createConnection({
     database: 'tikal'
 });
 
-app.use(logger('dev'));
+app.use(morgan('dev'));
 app.use(bodyParser.json());
 app.use(methodOverride());
 app.use(cors());
 app.use(session);
 app.use('/files', express.static('files'));
 
-const languages = require('./modules/languages.js');
-const gameInit = require('./modules/gameInit.js');
-const account = require('./modules/account.js');
+import * as languages from './modules/languages.js';
+import * as gameInit from './modules/gameInit.js';
+import * as account from './modules/account.js';
+import * as game from './modules/game.js';
 
 if (app.get('env') === 'production') {
     app.set('trust proxy', 1);
@@ -211,6 +211,7 @@ async function save() {
 }
 
 async function kickPlayers() {
+    console.log('kickPlayer');
     const rooms = io.sockets.adapter.rooms;
     for (const room of rooms) {
         if (room[0].startsWith('room_')) {
@@ -228,7 +229,7 @@ async function kickPlayers() {
 
 //do something when app is closing
 process.on('exit', async () => {
-    await save();
+    // await save();
     process.exit();
 });
 
@@ -262,8 +263,7 @@ nodemon({
 });
 //patch SIGUSR1-2 on windows for nodemon
 nodemon.on('start', () => {
-}).on('quit', async () =>{
-    await save();
+}).on('quit', () =>{
 }).on('restart', async (files) => {
     await save();
 });

@@ -1,5 +1,5 @@
-const nodemailer = require('nodemailer');
-const crypto = require('crypto');
+import nodemailer from 'nodemailer';
+import crypto from 'crypto';
 
 //ash function for passwords
 const ash = (str) => crypto.createHash('sha256')
@@ -70,7 +70,7 @@ function clearResetPasswordQueue(token, email='') {
 }
 
 //asks if an account containing username or email is in db, priority to username
-module.exports.userExists = function (username, email, language, con, res) {
+function userExists(username, email, language, con, res) {
     const dictionnary = require('../files/json/translation/' + language + '.json');
     con.query('SELECT username FROM users WHERE username = ?', username, (e, r) => {
         if (e) {
@@ -93,11 +93,11 @@ module.exports.userExists = function (username, email, language, con, res) {
             }
         }
     });
-};
+}
 
 //sends the creating account email, containing a unique token, effective for 5 minutes,
 // temporary saving datas in the signUp queue
-module.exports.mailCreateAccount = function (username, password, email, language, res) {
+function mailCreateAccount(username, password, email, language, res) {
     const dictionnary = require('../files/json/translation/' + language + '.json');
     const token = generateToken();
     clearCreatingAccountQueue('', email);
@@ -118,10 +118,10 @@ module.exports.mailCreateAccount = function (username, password, email, language
             res.json({status: 1, message: dictionnary.mail[3].data});
         }
     });
-};
+}
 
 //asks if token is in the signUp queue
-module.exports.checkSignUpToken = function (token, language, res) {
+function checkSignUpToken(token, language, res) {
     const dictionnary = require('../files/json/translation/' + language + '.json');
     for (const line of creatingAccountQueue) {
         if (line.token === token) {
@@ -131,10 +131,10 @@ module.exports.checkSignUpToken = function (token, language, res) {
     }
     res.json({status: 0, message: dictionnary.mail[5].data});
     return 0;
-};
+}
 
 //creates the account with datas in the queue linked to token
-module.exports.createAccount = function (token, language, con, res){
+function createAccount(token, language, con, res){
     const dictionnary = require('../files/json/translation/' + language + '.json');
     for(const line of creatingAccountQueue){
         if(line.token===token){
@@ -152,7 +152,7 @@ module.exports.createAccount = function (token, language, con, res){
 }
 
 //signIn, identifier can be either username or email
-module.exports.signIn = function (identifier, password, language, con, res) {
+function signIn(identifier, password, language, con, res) {
     const dictionnary = require('../files/json/translation/' + language + '.json');
     con.query('SELECT username FROM users WHERE (username = ? OR email = ?)', [identifier, identifier], (e,r)=> {
         if(e){
@@ -179,7 +179,7 @@ module.exports.signIn = function (identifier, password, language, con, res) {
 
 //sends an email containing a unique token to reset the password, effective for 5 minutes
 //temporary linking the token and email in the resetPassword queue
-module.exports.mailResetPassword = function (email, language, con, res){
+function mailResetPassword(email, language, con, res){
     con.query('SELECT email FROM users WHERE email = ?', email, (e, r) => {
         if(e){
             throw e;
@@ -211,7 +211,7 @@ module.exports.mailResetPassword = function (email, language, con, res){
 }
 
 //asks if token is in the resetPassword queue
-module.exports.checkResetPasswordToken = function (token, language, res) {
+function checkResetPasswordToken(token, language, res) {
     const dictionnary = require('../files/json/translation/' + language + '.json');
     for (const line of resetPasswordQueue) {
         if (line.token === token) {
@@ -224,7 +224,7 @@ module.exports.checkResetPasswordToken = function (token, language, res) {
 };
 
 //resets the password of the account linked to the email, himself linked to the token
-module.exports.resetPassword = function (token, password, language, con, res){
+function resetPassword(token, password, language, con, res){
     for(const line of resetPasswordQueue) {
         if (line.token === token) {
             con.query('UPDATE users SET password = ? WHERE email = ?', [ash(password), line.email], (err) => {
