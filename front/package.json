@@ -29,6 +29,7 @@
     "@ionic/angular": "^6.1.9",
     "electron": "^22.0.0",
     "ionicons": "^6.0.3",
+    "json5": "^2.2.3",
     "ngx-socket-io": "^4.4.0",
     "rxjs": "~7.5.0",
     "three": "^0.146.0",
