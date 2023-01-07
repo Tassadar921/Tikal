@@ -10,7 +10,7 @@ const httpServer = http.Server(app);
 import nodemon from 'nodemon';
 import {Server} from 'socket.io';
 const io = new Server(httpServer);
-import expressSession from 'express-session'
+import expressSession from 'express-session';
 
 const session = expressSession({
     secret: 'eb8fcc253281389225b4f7872f2336918ddc7f689e1fc41b64d5c4f378cdc438',
@@ -53,12 +53,12 @@ con.connect(err => {
         console.log('Connected to db');
 
 
-        app.get('/getLanguagesList', function (req, res) {
-            languages.getLanguagesList(res);
+        app.get('/getLanguagesList', async function (req, res) {
+            await languages.getLanguagesList(res);
         });
 
-        app.post('/getTranslation', function (req, res) {
-            languages.getTranslation(req.body.language, res);
+        app.post('/getTranslation', async function (req, res) {
+            await languages.getTranslation(req.body.language, res);
         });
 
         app.post('/userExists', function (req, res) {
@@ -205,8 +205,9 @@ con.connect(err => {
 
 process.stdin.resume();//so the program will not close instantly
 
-async function save() {
+async function save(message = '') {
     //SAVE
+    console.log(message);
     await kickPlayers();
 }
 
@@ -235,39 +236,37 @@ process.on('exit', async () => {
 
 //catches ctrl+c event
 process.on('SIGINT', async () => {
-    await save();
+    await save('SIGINT');
     process.exit();
 });
 
 // catches "kill pid" (for example: nodemon restart)
 if (process.platform !== 'win32') { //WORKS ONLY ON LINUX, USELESS ON WINDOWS
     process.on('SIGUSR1', async() => {
-        await save();
+        await save('SIGUSR1');
         process.exit();
     });
     process.on('SIGUSR2', async () => {
-        await save();
+        await save('SIGUSR2');
         process.exit();
+    });
+}else{
+//patch SIGUSR1-2 on windows for nodemon
+    nodemon.on('start', () => {
+        console.log('ON START');
+    }).on('quit', () =>{
+    }).on('restart', async (files) => {
+        await save('nodemon restart');
     });
 }
 
-//catches uncaught exceptions
-process.on('uncaughtException', async () => {
-    await save();
+// catches uncaught exceptions
+process.on('uncaughtException', async (exception) => {
+    console.log(exception);
+    await save('uncaughtException');
     process.exit();
 });
 
-nodemon({
-    script: 'server.js',
-    ext: 'js json'
-});
-//patch SIGUSR1-2 on windows for nodemon
-nodemon.on('start', () => {
-}).on('quit', () =>{
-}).on('restart', async (files) => {
-    await save();
-});
-
-if (http.listen(process.env.PORT || 8080)) {
+if (httpServer.listen(process.env.PORT || 8080)) {
     console.log('Serveur lancé sur le port 8080');
 }

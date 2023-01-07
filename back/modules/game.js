@@ -1,4 +1,9 @@
 import * as THREE from 'three';
+import {GameConfig} from './GameConfig.js'
 
-let scene = new THREE.Scene();
-console.log('scene : ', scene);
+export class Game extends GameConfig{
+
+    constructor(){
+        super();
+    }
+}

@@ -48,12 +48,12 @@ export class HomePage implements AfterViewInit {
     const radius = 10;
     const fps = 60;
 
-    this.plane = this.initializationService.configPlane(lines, col, radius);
-    this.scene = this.initializationService.configScene(this.plane);
+    // this.plane;
+    // this.scene;
     this.camera = this.initializationService.configCamera(this.canvas, this.scene);
     this.renderer = this.initializationService.configRenderer(this.canvas);
     this.controls = this.initializationService.configControls(this.canvas, this.camera);
-    this.matrix = this.initializationService.initMatrix(lines, col);
+    // this.matrix;
 
     this.scene.add(this.initializationService.configLight());
 

@@ -77,4 +77,3 @@ export class ApiService {
   getTilesList = async () => await lastValueFrom(
     this.http.get(environment.urlBack + 'getTilesList'));
 }
-

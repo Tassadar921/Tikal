@@ -7,8 +7,8 @@ export const environment = {
 
   ///////////* PRODUCTION *///////////
 
-  //urlFront:'http://loginmtg.tassdar.ovh:8100/',
   //urlBack: 'http://loginmtg.tassadar.ovh:8080/',
+  //urlFront:'http://loginmtg.tassdar.ovh:8100/',
 
   ///////////* DEVELOPPEMENT *///////////
 
