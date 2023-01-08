@@ -11,7 +11,7 @@ import { HttpClientModule } from '@angular/common/http';
 import {environment} from '../environments/environment';
 
 import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
-const config: SocketIoConfig = { url: environment.urlBack, options: {} };
+const config: SocketIoConfig = { url: 'http://localhost:8080', options: {} };
 
 @NgModule({
   declarations: [AppComponent],

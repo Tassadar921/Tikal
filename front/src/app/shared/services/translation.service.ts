@@ -19,14 +19,14 @@ export class TranslationService {
   //changes language cookie for language param (id), and changes dictionary for the new language
   updateLanguage = async (language) => {
     await this.cookiesService.setCookie('language', language);
-    this.languages = Object(await this.apiService.getLanguagesList()).list;
+    this.languages = Object(await this.apiService.getLanguagesList()).default.list;
     this.initDictionary(Object(await this.apiService.getTranslation(
       await this.cookiesService.getFromCookies('language')
     )));
   };
 
   //replacing dictionary by languageDictionary param
-  initDictionary = (languageDictionary) => this.dictionary = Object(languageDictionary);
+  initDictionary = (languageDictionary) => this.dictionary = Object(languageDictionary).default;
 
   //initialisation of dictionary from the cookies
   triggerOnLoad = async () => {

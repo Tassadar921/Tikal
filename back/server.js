@@ -1,16 +1,19 @@
 import express from 'express';
-const app = express();
 import bodyParser from 'body-parser';
 import morgan from 'morgan';
 import methodOverride from 'method-override';
 import cors from 'cors';
 import mysql from 'mysql';
 import http from 'http';
-const httpServer = http.Server(app);
 import nodemon from 'nodemon';
 import {Server} from 'socket.io';
-const io = new Server(httpServer);
 import expressSession from 'express-session';
+
+const app = express();
+const httpServer = http.Server(app);
+const io = new Server(httpServer, {cors: {
+    origin: 'http://localhost:8100',
+    }});
 
 const session = expressSession({
     secret: 'eb8fcc253281389225b4f7872f2336918ddc7f689e1fc41b64d5c4f378cdc438',
@@ -32,7 +35,7 @@ const con = mysql.createConnection({
 app.use(morgan('dev'));
 app.use(bodyParser.json());
 app.use(methodOverride());
-app.use(cors());
+app.use(cors({origin: 'http://localhost:8100'}));
 app.use(session);
 app.use('/files', express.static('files'));
 
