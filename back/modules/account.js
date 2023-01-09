@@ -177,6 +177,11 @@ export function signIn(identifier, password, language, con, res) {
     });
 }
 
+export function disconnect(con, res){
+    console.log('disconnect');
+    res.json({status: 1, message: ''});
+}
+
 //sends an email containing a unique token to reset the password, effective for 5 minutes
 //temporary linking the token and email in the resetPassword queue
 export function mailResetPassword(email, language, con, res){
