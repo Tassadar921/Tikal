@@ -2,7 +2,7 @@ import {Injectable} from '@angular/core';
 import {Socket} from 'ngx-socket-io';
 import {CookiesService} from './cookies.service';
 import {ToastService} from './toast.service';
-import {AlertController} from '@ionic/angular';
+import {ActionSheetController, AlertController} from '@ionic/angular';
 
 @Injectable({
   providedIn: 'root'
@@ -18,7 +18,8 @@ export class SocketsService {
     private socket: Socket,
     private cookiesService: CookiesService,
     private toastService: ToastService,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private actionSheetController: ActionSheetController
   ) {
   }
 
@@ -111,7 +112,7 @@ export class SocketsService {
 
   leaveRoom = async () => {
     this.socket.emit('leaveRoom');
-    await this.alertController.dismiss();
+    await this.actionSheetController.dismiss();
     this.roomID = '';
     this.playersInRoom = [];
     this.inARoom = false;

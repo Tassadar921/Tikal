@@ -71,20 +71,20 @@ export function clearResetPasswordQueue(token, email='') {
 
 //asks if an account containing username or email is in db, priority to username
 export function userExists(username, email, language, con, res) {
-    const dictionnary = require('../files/json/translation/' + language + '.json');
+    const dictionary = import('../files/json/translation/' + language + '.json', {assert: {type: 'json'}});
     con.query('SELECT username FROM users WHERE username = ?', username, (e, r) => {
         if (e) {
             throw e;
         } else {
             if (r.length) {
-                res.json({status: 0, message: dictionnary.server[0].data});
+                res.json({status: 0, message: dictionary.server[0].data});
             } else {
                 con.query('SELECT username FROM users WHERE email = ?', email, (er, re) => {
                     if (er) {
                         throw er;
                     } else {
                         if (re.length) {
-                            res.json({status: 0, message: dictionnary.server[1].data});
+                            res.json({status: 0, message: dictionary.server[1].data});
                         } else {
                             res.json({status: 1, message: ''});
                         }
@@ -98,44 +98,44 @@ export function userExists(username, email, language, con, res) {
 //sends the creating account email, containing a unique token, effective for 5 minutes,
 // temporary saving datas in the signUp queue
 export function mailCreateAccount(username, password, email, language, res) {
-    const dictionnary = require('../files/json/translation/' + language + '.json');
+    const dictionary = import('../files/json/translation/' + language + '.json', {assert: {type: 'json'}});
     const token = generateToken();
     clearCreatingAccountQueue('', email);
     creatingAccountQueue.push({token, username, password, email});
     setTimeout(clearCreatingAccountQueue, 300000, token);
 
     mailOptions.to = email;
-    mailOptions.subject = dictionnary.mail[0].data;
-    mailOptions.text = dictionnary.mail[1].data.replace('username', username)
+    mailOptions.subject = dictionary.mail[0].data;
+    mailOptions.text = dictionary.mail[1].data.replace('username', username)
         + urlFront
         + 'conf-account?token='
         + token;
 
     transporter.sendMail(mailOptions, async function (error) {
         if (error) {
-            res.json({status: 0, message: dictionnary.mail[2].data});
+            res.json({status: 0, message: dictionary.mail[2].data});
         } else {
-            res.json({status: 1, message: dictionnary.mail[3].data});
+            res.json({status: 1, message: dictionary.mail[3].data});
         }
     });
 }
 
 //asks if token is in the signUp queue
 export function checkSignUpToken(token, language, res) {
-    const dictionnary = require('../files/json/translation/' + language + '.json');
+    const dictionary = import('../files/json/translation/' + language + '.json', {assert: {type: 'json'}});
     for (const line of creatingAccountQueue) {
         if (line.token === token) {
-            res.json({status: 1, message: dictionnary.mail[4].data});
+            res.json({status: 1, message: dictionary.mail[4].data});
             return 1;
         }
     }
-    res.json({status: 0, message: dictionnary.mail[5].data});
+    res.json({status: 0, message: dictionary.mail[5].data});
     return 0;
 }
 
 //creates the account with datas in the queue linked to token
 export function createAccount(token, language, con, res){
-    const dictionnary = require('../files/json/translation/' + language + '.json');
+    const dictionary = import('../files/json/translation/' + language + '.json', {assert: {type: 'json'}});
     for(const line of creatingAccountQueue){
         if(line.token===token){
             con.query('INSERT INTO users (username, password, email) VALUES (?,?,?)', [line.username, ash(line.password), line.email], (err) => {
@@ -144,7 +144,7 @@ export function createAccount(token, language, con, res){
                 }else{
                     const username = line.username;
                     clearCreatingAccountQueue(line.token);
-                    res.json({status: 1, message: dictionnary.server[2].data, username: username});
+                    res.json({status: 1, message: dictionary.server[2].data, username: username});
                 }
             });
         }
@@ -153,13 +153,13 @@ export function createAccount(token, language, con, res){
 
 //signIn, identifier can be either username or email
 export function signIn(identifier, password, language, con, res) {
-    const dictionnary = require('../files/json/translation/' + language + '.json');
+    const dictionary = import('../files/json/translation/' + language + '.json', {assert: {type: 'json'}});
     con.query('SELECT username FROM users WHERE (username = ? OR email = ?)', [identifier, identifier], (e,r)=> {
         if(e){
             throw e;
         }else{
             if(!r.length){
-                res.json({status: 0, message: dictionnary.mail[6].data});
+                res.json({status: 0, message: dictionary.mail[6].data});
             }else{
                 con.query('SELECT username FROM users WHERE (username = ? OR email = ?) AND password = ?', [identifier, identifier, ash(password)], (er,re)=>{
                     if(er){
@@ -168,7 +168,7 @@ export function signIn(identifier, password, language, con, res) {
                         if(re.length){
                             res.json({status: 1, message: '', username: re[0].username});
                         }else{
-                            res.json({status: 0, message: dictionnary.mail[7].data});
+                            res.json({status: 0, message: dictionary.mail[7].data});
                         }
                     }
                 });
@@ -189,27 +189,27 @@ export function mailResetPassword(email, language, con, res){
         if(e){
             throw e;
         }else{
-            const dictionnary = require('../files/json/translation/' + language + '.json');
+            const dictionary = import('../files/json/translation/' + language + '.json', {assert: {type: 'json'}});
             if(r.length){
                 const token = generateToken();
                 clearResetPasswordQueue('', email);
                 resetPasswordQueue.push({token, email});
                 setTimeout(clearResetPasswordQueue, 300000, token);
                 mailOptions.to=email;
-                mailOptions.subject=dictionnary.mail[8].data;
-                mailOptions.text = dictionnary.mail[9].data
+                mailOptions.subject=dictionary.mail[8].data;
+                mailOptions.text = dictionary.mail[9].data
                     + urlFront
                     + 'reset-password?token='
                     + token;
                 transporter.sendMail(mailOptions, async function (error) {
                     if (error) {
-                        res.json({status: 0, message: dictionnary.mail[2].data});
+                        res.json({status: 0, message: dictionary.mail[2].data});
                     } else {
-                        res.json({status: 1, message: dictionnary.mail[10].data});
+                        res.json({status: 1, message: dictionary.mail[10].data});
                     }
                 });
             }else{
-                res.json({status: 1, message: dictionnary.mail[10].data});
+                res.json({status: 1, message: dictionary.mail[10].data});
             }
         }
     });
@@ -217,16 +217,16 @@ export function mailResetPassword(email, language, con, res){
 
 //asks if token is in the resetPassword queue
 export function checkResetPasswordToken(token, language, res) {
-    const dictionnary = require('../files/json/translation/' + language + '.json');
+    const dictionary = import('../files/json/translation/' + language + '.json', {assert: {type: 'json'}});
     for (const line of resetPasswordQueue) {
         if (line.token === token) {
-            res.json({status: 1, message: dictionnary.mail[4].data});
+            res.json({status: 1, message: dictionary.mail[4].data});
             return 1;
         }
     }
-    res.json({status: 0, message: dictionnary.mail[5].data});
+    res.json({status: 0, message: dictionary.mail[5].data});
     return 0;
-};
+}
 
 //resets the password of the account linked to the email, himself linked to the token
 export function resetPassword(token, password, language, con, res){
@@ -236,9 +236,9 @@ export function resetPassword(token, password, language, con, res){
                 if (err) {
                     throw err;
                 } else {
-                    const dictionnary = require('../files/json/translation/' + language + '.json');
+                    const dictionary = import('../files/json/translation/' + language + '.json', {assert: {type: 'json'}});
                     clearResetPasswordQueue(token);
-                    res.json({status: 1, message:dictionnary.mail[11].data});
+                    res.json({status: 1, message:dictionary.mail[11].data});
                 }
             });
         }

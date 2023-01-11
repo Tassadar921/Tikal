@@ -55,6 +55,11 @@ export class ApiService {
       {identifier, password, language: await this.cookiesService.getFromCookies('language')}
     ));
 
+  disconnect = async () => await lastValueFrom(
+    this.http.post(environment.urlBack + 'disconnect',
+      {username: await this.cookiesService.getFromCookies('username'), token: ''}
+    ));
+
   //sends an email containing a unique token to reset the password, effective for 5 minutes
   //temporary linking the token and email in the resetPassword queue
   mailResetPassword = async (email) => await lastValueFrom(

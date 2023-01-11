@@ -32,8 +32,8 @@ export class WaitingComponent implements OnInit {
         {
           text: 'Yes',
           icon: 'exit',
-          handler: () => {
-            this.socketsService.leaveRoom();
+          handler: async () => {
+            await this.socketsService.leaveRoom();
           }
         },
         {

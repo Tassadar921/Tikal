@@ -84,8 +84,8 @@ con.connect(err => {
             account.signIn(req.body.identifier, req.body.password, req.body.language, con, res);
         });
 
-        app.get('/disconnect', function (req, res) {
-           account.disconnect(con, res);
+        app.post('/disconnect', (req, res) => {
+            account.disconnect(req.body.username, req.body.token, con, res);
         });
 
         app.post('/mailResetPassword', function (req, res) {
