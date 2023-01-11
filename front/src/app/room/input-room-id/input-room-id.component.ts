@@ -1,17 +1,19 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {SocketsService} from '../../shared/services/sockets.service';
+import {ApiService} from '../../shared/services/api.service';
 
 @Component({
   selector: 'app-input-room-id',
   templateUrl: './input-room-id.component.html',
   styleUrls: ['./input-room-id.component.scss'],
 })
-export class InputRoomIDComponent implements OnInit {
+export class InputRoomIDComponent implements OnInit, OnDestroy {
 
   public inputRoomID = '';
 
   constructor(
     public socketsService: SocketsService,
+    private apiService: ApiService
   ) { }
 
   ngOnInit() {
@@ -21,6 +23,10 @@ export class InputRoomIDComponent implements OnInit {
         this.socketsService.joinRoom(this.inputRoomID);
       }
     });
+  }
+
+  async ngOnDestroy() {
+    await this.apiService.disconnect();
   }
 
   createRoom = () => {
