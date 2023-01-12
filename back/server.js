@@ -43,6 +43,7 @@ import * as languages from './modules/languages.js';
 import * as gameInit from './modules/gameInit.js';
 import * as account from './modules/account.js';
 import * as game from './modules/game.js';
+import {checkConnection} from './modules/account.js';
 
 if (app.get('env') === 'production') {
     app.set('trust proxy', 1);
@@ -84,8 +85,12 @@ con.connect(err => {
             account.signIn(req.body.identifier, req.body.password, req.body.language, con, res);
         });
 
-        app.post('/disconnect', (req, res) => {
-            account.disconnect(req.body.username, req.body.token, con, res);
+        app.post('/checkConnection', (req, res) => {
+            account.checkConnection(req.body.username, req.body.token, con, res);
+        });
+
+        app.post('/getConnectionToken', (req, res) => {
+            account.getConnectionToken(req.body.username, con, res);
         });
 
         app.post('/mailResetPassword', function (req, res) {

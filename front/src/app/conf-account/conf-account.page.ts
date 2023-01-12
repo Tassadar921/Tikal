@@ -4,6 +4,7 @@ import {Router} from '@angular/router';
 import {CookiesService} from '../shared/services/cookies.service';
 import {ApiService} from '../shared/services/api.service';
 import {ToastService} from '../shared/services/toast.service';
+import {ConnectionService} from '../shared/services/connection.service';
 
 @Component({
   selector: 'app-conf-account',
@@ -22,7 +23,8 @@ export class ConfAccountPage implements OnInit {
     private router: Router,
     private cookiesService: CookiesService,
     private apiService: ApiService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private connectionService: ConnectionService
   ) { }
 
   async ngOnInit() {
@@ -31,7 +33,7 @@ export class ConfAccountPage implements OnInit {
       if(this.retour.status){
         this.retour = await this.apiService.createAccount(params.token);
         this.output = this.retour.message;
-        await this.cookiesService.setCookie('username', this.retour.username);
+        await this.connectionService.connect(this.retour.username);
         await this.toastService.displayToast('Connected to new account', 5000, 'bottom');
         this.waiting = 0;
         await this.router.navigateByUrl('/room');

@@ -5,6 +5,7 @@ import {CookiesService} from '../../shared/services/cookies.service';
 import {Router} from '@angular/router';
 import {ToastService} from '../../shared/services/toast.service';
 import {CheckingService} from '../checking.service';
+import {ConnectionService} from '../../shared/services/connection.service';
 
 @Component({
   selector: 'app-signin',
@@ -28,7 +29,8 @@ export class SigninComponent implements OnInit {
     private cookiesService: CookiesService,
     private router: Router,
     private toastService: ToastService,
-    public checkingService: CheckingService
+    private connectionService: ConnectionService,
+    public checkingService: CheckingService,
   ) {}
 
   ngOnInit() {}
@@ -37,7 +39,7 @@ export class SigninComponent implements OnInit {
     this.waiting = true;
     this.retour = await this.apiService.signIn(this.username, this.password);
     if(this.retour.status){
-      await this.cookiesService.setCookie('username', this.retour.username);
+      await this.connectionService.connect(this.retour.username);
       await this.toastService.displayToast('Connected as ' + this.retour.username, '5000', 'bottom');
       await this.router.navigateByUrl('/room');
     }

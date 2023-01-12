@@ -5,6 +5,11 @@
   <div *ngIf="socketsService.inARoom">
     <app-waiting></app-waiting>
   </div>
+  <ion-row>
+    <ion-col>
+      <ion-button (click)="connectionService.disconnect()" color="danger">Disconnect</ion-button>
+    </ion-col>
+  </ion-row>
 </ion-grid>
 
 <ion-fab horizontal="end" vertical="bottom">

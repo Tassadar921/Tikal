@@ -34,7 +34,7 @@ const mailOptions = {
 
 //generates token by stringing a random number
 function generateToken() {
-    return Math.random().toString(36).substr(2) + Math.random().toString(36).substr(2);
+    return (Math.random() + 1).toString(36).substring(2)+(Math.random() + 1).toString(36).substring(2);
 }
 
 //clears creatingAccount queue,
@@ -135,29 +135,31 @@ export function checkSignUpToken(token, language, res) {
 
 //creates the account with datas in the queue linked to token
 export function createAccount(token, language, con, res){
-    const dictionary = import('../files/json/translation/' + language + '.json', {assert: {type: 'json'}});
     for(const line of creatingAccountQueue){
         if(line.token===token){
-            con.query('INSERT INTO users (username, password, email) VALUES (?,?,?)', [line.username, ash(line.password), line.email], (err) => {
+            let token = generateToken();
+            con.query('INSERT INTO users (username, password, email, token) VALUES (?,?,?)', [line.username, ash(line.password), line.email, token], (err) => {
                 if(err){
                     throw err;
                 }else{
+                    const dictionary = import('../files/json/translation/' + language + '.json', {assert: {type: 'json'}});
                     const username = line.username;
                     clearCreatingAccountQueue(line.token);
-                    res.json({status: 1, message: dictionary.server[2].data, username: username});
+                    res.json({status: 1, message: dictionary.server[2].data, username: username, token});
                 }
             });
+            break;
         }
     }
 }
 
 //signIn, identifier can be either username or email
 export function signIn(identifier, password, language, con, res) {
-    const dictionary = import('../files/json/translation/' + language + '.json', {assert: {type: 'json'}});
     con.query('SELECT username FROM users WHERE (username = ? OR email = ?)', [identifier, identifier], (e,r)=> {
         if(e){
             throw e;
         }else{
+            const dictionary = import('../files/json/translation/' + language + '.json', {assert: {type: 'json'}});
             if(!r.length){
                 res.json({status: 0, message: dictionary.mail[6].data});
             }else{
@@ -166,7 +168,14 @@ export function signIn(identifier, password, language, con, res) {
                         throw er;
                     }else{
                         if(re.length){
-                            res.json({status: 1, message: '', username: re[0].username});
+                            let token = generateToken();
+                            con.query('UPDATE users SET token = ? WHERE username = ?', [token, re[0].username], (err, result)=>{
+                                if(err){
+                                    throw err;
+                                }else{
+                                    res.json({status: 1, message: '', username: re[0].username, token});
+                                }
+                            });
                         }else{
                             res.json({status: 0, message: dictionary.mail[7].data});
                         }
@@ -177,9 +186,31 @@ export function signIn(identifier, password, language, con, res) {
     });
 }
 
-export function disconnect(con, res){
-    console.log('disconnect');
-    res.json({status: 1, message: ''});
+export function getConnectionToken(username, con, res){
+    let token = generateToken();
+    con.query('UPDATE users SET token = ? WHERE username = ?', [token, username], (error)=>{
+        if(error) {
+            throw error;
+        }else{
+            res.json({status: 1, token});
+        }
+    });
+}
+
+export function checkConnection(username, token, con, res){
+    console.log(username);
+    console.log(token);
+    con.query('SELECT username FROM users WHERE username = ? AND token = ?', [username, token], (error, result)=>{
+        if(error){
+            throw error;
+        }else{
+            if(result.length){
+                res.json({status: 1});
+            }else{
+                res.json({status: 0});
+            }
+        }
+    });
 }
 
 //sends an email containing a unique token to reset the password, effective for 5 minutes
