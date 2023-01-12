@@ -3,7 +3,6 @@ import {SocketsService} from '../shared/services/sockets.service';
 import {CookiesService} from '../shared/services/cookies.service';
 import {ApiService} from '../shared/services/api.service';
 import {Platform} from '@ionic/angular';
-import {ConnectionService} from '../shared/services/connection.service';
 
 @Component({
   selector: 'app-room',
@@ -17,8 +16,7 @@ export class RoomPage implements AfterViewInit {
     public socketsService: SocketsService,
     public cookiesService: CookiesService,
     private apiService: ApiService,
-    private platform: Platform,
-    public connectionService: ConnectionService,
+    private platform: Platform
   ) {}
 
   async ngAfterViewInit() {
