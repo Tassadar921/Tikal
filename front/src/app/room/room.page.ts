@@ -1,8 +1,6 @@
 import {Component, AfterViewInit, OnDestroy} from '@angular/core';
 import {SocketsService} from '../shared/services/sockets.service';
 import {CookiesService} from '../shared/services/cookies.service';
-import {ApiService} from '../shared/services/api.service';
-import {Platform} from '@ionic/angular';
 
 @Component({
   selector: 'app-room',
@@ -14,9 +12,7 @@ export class RoomPage implements AfterViewInit {
 
   constructor(
     public socketsService: SocketsService,
-    public cookiesService: CookiesService,
-    private apiService: ApiService,
-    private platform: Platform
+    public cookiesService: CookiesService
   ) {}
 
   async ngAfterViewInit() {
