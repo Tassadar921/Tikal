@@ -42,8 +42,7 @@ app.use('/files', express.static('files'));
 import * as languages from './modules/languages.js';
 import * as gameInit from './modules/gameInit.js';
 import * as account from './modules/account.js';
-import * as game from './modules/game.js';
-import {checkConnection} from './modules/account.js';
+import * as game from './modules/Game.js';
 
 if (app.get('env') === 'production') {
     app.set('trust proxy', 1);
@@ -228,6 +227,7 @@ async function kickPlayers() {
     const rooms = io.sockets.adapter.rooms;
     for (const room of rooms) {
         if (room[0].startsWith('room_')) {
+            room[0].emit('roomClosed');
             const sockets = await io.in(room[0]).fetchSockets();
             sockets[0].to('room_' + sockets[0].roomID).emit('roomClosed');
             sockets[0].emit('roomClosed');
@@ -267,7 +267,7 @@ if (process.platform !== 'win32') { //WORKS ONLY ON LINUX, USELESS ON WINDOWS
     nodemon.on('start', () => {
         console.log('ON START');
     }).on('quit', () =>{
-    }).on('restart', async (files) => {
+    }).on('restart', async () => {
         await save('nodemon restart');
     });
 }
