@@ -198,8 +198,6 @@ export function getConnectionToken(username, con, res){
 }
 
 export function checkConnection(username, token, con, res){
-    console.log(username);
-    console.log(token);
     con.query('SELECT username FROM users WHERE username = ? AND token = ?', [username, token], (error, result)=>{
         if(error){
             throw error;
