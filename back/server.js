@@ -2,6 +2,7 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import mysql from 'mysql';
+import * as edgedb from 'edgedb';
 
 import * as languages from './modules/languages.js';
 import * as gameInit from './modules/gameInit.js';
@@ -83,6 +84,9 @@ app.post('/resetPassword', function (req, res) {
 app.get('/getTilesList', (req, res) => {
     gameInit.getTilesList(res);
 });
+
+const connection = edgedb.createClient();
+console.log(await connection.querySingle("select 1 + 1"));
 
 if (app.listen(process.env.PORT || 8080)) {
     console.log('=========== SERVER STARTED FOR HTTP RQ ===========');
