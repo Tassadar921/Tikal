@@ -3,6 +3,7 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import mysql from 'mysql';
 import * as edgedb from 'edgedb';
+import e from "./dbschema/edgeql-js";
 
 import * as languages from './modules/languages.js';
 import * as gameInit from './modules/gameInit.js';
@@ -18,20 +19,20 @@ if (app.get('env') === 'production') {
     app.set('trust proxy', 1);
 }
 
-const con = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'tikal'
-});
+// const con = mysql.createConnection({
+//     host: 'localhost',
+//     user: 'root',
+//     password: '',
+//     database: 'tikal'
+// });
 
-con.connect(err => {
-    if (err) {
-        console.log('Error when connecting to db:', err);
-    } else {
-        console.log('Connected to db for http requests');
-    }
-});
+// con.connect(err => {
+//     if (err) {
+//         console.log('Error when connecting to db:', err);
+//     } else {
+//         console.log('Connected to db for http requests');
+//     }
+// });
 
 app.get('/getLanguagesList', async function (req, res) {
     await languages.getLanguagesList(res);
@@ -86,7 +87,14 @@ app.get('/getTilesList', (req, res) => {
 });
 
 const connection = edgedb.createClient();
-console.log(await connection.querySingle("select 1 + 1"));
+// console.log(await connection.querySingle(");
+// console.log(await e.query(connection,{name: 'test', email: 'coucou@coucou', password: '123'}));
+e.insert(e.getUser, movie => ({
+    {
+        name: 'test',
+
+    }
+}));
 
 if (app.listen(process.env.PORT || 8080)) {
     console.log('=========== SERVER STARTED FOR HTTP RQ ===========');
